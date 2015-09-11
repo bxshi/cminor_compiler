@@ -20,7 +20,8 @@ test: osxbuild cminor
 	diff $(RESULT_PREFIX)0.result good0.test
 	./cminor -scan test/good1.cminor > good1.test
 	diff $(RESULT_PREFIX)1.result good1.test
-
+	./cminor -scan test/good2.cminor > good2.test
+	diff $(RESULT_PREFIX)2.result good2.test
 clean:
 	rm lex.yy.o cminor token.o $(SCANNER_PATH)/lex.yy.c $(SCANNER_PATH)/token.h.gch
 	rm *.test

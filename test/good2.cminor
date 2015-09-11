@@ -1,0 +1,8 @@
+/*char literal test*/
+' ''\a''\'''\"''\\''\n' // space beep ' " \ \n
+/* string tests */
+"\"\"" // ""
+"\"\\" // string is \"\\
+"\"\\""" // two strings, \"\\ and ""
+"/*string literal*/" /* this is also valid */
+"yello,\\\n \\\"\\\" world."
