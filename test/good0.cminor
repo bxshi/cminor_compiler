@@ -1,0 +1,26 @@
+/*CMinor Comment Test */
+
+/*
+The output should be:
+
+*/
+
+/* You should not seen this */ // you should not seen this
+
+/****
+ * * * * * *** ****
+ * Valid C Comment // this is part of C comment
+ */
+ /**/ // empty
+ /***/ abc // one star only
+ /*/*/
+ /*\*/ // a prefix of an escape character
+ /*****
+ *****/ // comment in multiple lines
+  /**
+  * comments
+  **/
+ /* inline comment */ "you_should_get_an_identifier" // but_not_this_identifier
+ /* and sometimes
+  cross line C comment */ "followed by a string_literal."
+// nothing_in_here_should_display /* abc */
