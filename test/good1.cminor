@@ -1,20 +1,15 @@
 //------keyword tests
 
-array boolean char else false for function if integer print return string /* TODO: add remaining keywords here... */
+array boolean char else false for function if integer print return string true void while )(){[:;++--+-/^%<<==>====!==&&||]} /* TODO: add remaining keywords here... */
 
 //------keyword tests end
 
+//------identifier tests
+_
+__
+_0_______0_
+_a123123j92u3b82oibui3r2982
+brl23rb23r8923bur2398r23ubr29738
+r2ubiyghubyg878hiuhvf87gu___2f2f2f2f2f23f_23f2f23f_aefa34trgfqwhrtebv_qw445trvew4ve5br4vw3c4_resd_
 
-//------comment tests
-
-// array boolean char else false for function if integer print return string
-
-/*
-  array boolean char else false for function if integer print return string
-*/
-
-//------comment end
-
-
-// string literal
-""
+//------identifier tests end

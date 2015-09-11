@@ -9,3 +9,14 @@ array
 
 
 array boolean
+//------string literal
+"" " " " \ " "\"" "\ \"\"" "\\\"\n\"" "/* you should see this */"
+
+//------string literal end
+
+
+//------char literal
+
+'\'' '\\' 'a' '\a'
+
+//------char literal end
