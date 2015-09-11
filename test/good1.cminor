@@ -1,0 +1,20 @@
+//------keyword tests
+
+array boolean char else false for function if integer print return string /* TODO: add remaining keywords here... */
+
+//------keyword tests end
+
+
+//------comment tests
+
+// array boolean char else false for function if integer print return string
+
+/*
+  array boolean char else false for function if integer print return string
+*/
+
+//------comment end
+
+
+// string literal
+""

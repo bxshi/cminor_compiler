@@ -1,0 +1,11 @@
+array
+
+/* string tests */
+"\"\"" // this
+"\"\\" // string is \"\\
+"\"\\""" // two strings, \"\\ and ""
+"\ \a \b \c \d \e\f\ged\n\\n" /* this is also valid */
+"yello,\\\n \\\"\\\"	world."
+
+
+array boolean
