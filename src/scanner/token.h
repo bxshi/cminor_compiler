@@ -6,6 +6,9 @@
 #define CMINOR_COMPILER_TOKEN_H
 
 #define PROCESS_START return(1);
+#define SCANNER_KEYWORD 1
+#define SCANNER_NOT_KEYWORD 0
+#define SCANNER_ERROR 3
 
 enum token {
     TOKEN_ARRAY, /* array */
@@ -50,15 +53,29 @@ enum token {
     TOKEN_AND, /* && */
     TOKEN_OR, /* || */
     TOKEN_ASSIGN, /* = */
+    TOKEN_COMMA, /* , */
 
-    TOKEN_STRING_LITERAL,
+    TOKEN_STRING_LITERAL, /* strings */
+    TOKEN_INTEGER_LITERAL, /* integers */
+    TOKEN_CHAR_LITERAL, /* char */
+    TOKEN_IDENTIFIER,
 
     TOKEN_UNDEFINED
 };
 
 typedef enum token token_t;
 
+/**
+ * return name string of a token
+ */
 const char* token_handler(token_t tk);
+
+char is_literal(token_t tk);
+
+/* check if `tk` is a keyword */
+char is_keyword(token_t tk);
+
+void escape(char *str);
 
 token_t token_type;
 

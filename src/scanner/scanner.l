@@ -6,7 +6,9 @@
 /* regexpr definition */
 %}
 
-COMMENT     (\/\*([^\"\'\*]*(['"][^\'\"]*[\'\"])*)*\*\/)|(\/\/[^\n]*\n)
+CPP_COMMENT (\/\/[^\n]*\n)
+C_COMMENT   (\/\*([^\*]|(\*+[^\/\*]))*\*+\/)
+COMMENT     ({C_COMMENT}|{CPP_COMMENT})
 
 DELIM       [ \t\n]
 WHITESPACE  {DELIM}+
@@ -14,29 +16,23 @@ WHITESPACE  {DELIM}+
 LETTER      [a-zA-Z]
 DIGIT       [0-9]
 
-IDENTIFIER  {LETTER}+({DIGIT}|{LETTER})*
+IDENTIFIER  (({LETTER}|_)+({DIGIT}|{LETTER}|_)*)
 NUMBER      {DIGIT}+
-LITERAL     \"([^\\\"\n]*(\\[^\"])*(\\\")*)*\"
+CHAR        (\'([^\\\']|(\\.))?\')
+LITERAL     (\"([^\\\"\n]*(\\[^\"])*(\\\")*)*\")
 
 %%
 
-%{
   /* ordered matches */
-%}
 
-%{
   /* first ignore all comment */
-%}
 
 {WHITESPACE}  {/*skip*/}
 {COMMENT}     {/*skip*/}
 {LITERAL}     {token_type=TOKEN_STRING_LITERAL;PROCESS_START}
+{CHAR}        {token_type=TOKEN_CHAR_LITERAL;PROCESS_START}
 
-
-%{
   /* here comes the keywords */
-
-%}
 
 array         {token_type=TOKEN_ARRAY; PROCESS_START}
 boolean       {token_type=TOKEN_BOOLEAN; PROCESS_START}
@@ -50,14 +46,40 @@ integer       {token_type=TOKEN_INTEGER;PROCESS_START}
 print         {token_type=TOKEN_PRINT;PROCESS_START}
 return        {token_type=TOKEN_RETURN;PROCESS_START}
 string        {token_type=TOKEN_STRING;PROCESS_START}
+true          {token_type=TOKEN_TRUE;PROCESS_START}
+void          {token_type=TOKEN_VOID;PROCESS_START}
+while         {token_type=TOKEN_WHILE;PROCESS_START}
+"("           {token_type=TOKEN_LEFT_PARENTHESIS;PROCESS_START}
+")"           {token_type=TOKEN_RIGHT_PARENTHESIS;PROCESS_START}
+"{"           {token_type=TOKEN_LEFT_CURLY_BRACKET;PROCESS_START}
+"}"           {token_type=TOKEN_RIGHT_CURLY_BRACKET;PROCESS_START}
+"["           {token_type=TOKEN_LEFT_BRACKET;PROCESS_START}
+"]"           {token_type=TOKEN_RIGHT_BRACKET;PROCESS_START}
+":"           {token_type=TOKEN_COLON;PROCESS_START}
+";"           {token_type=TOKEN_SEMI_COLON;PROCESS_START}
+"++"          {token_type=TOKEN_INCREMENT;PROCESS_START}
+"--"          {token_type=TOKEN_DECREMENT;PROCESS_START}
+"-"           {token_type=TOKEN_MINUS;PROCESS_START}
+"+"           {token_type=TOKEN_ADD;PROCESS_START}
+"^"           {token_type=TOKEN_EXPONENT;PROCESS_START}
+"/"           {token_type=TOKEN_DIVIDE;PROCESS_START}
+"%"           {token_type=TOKEN_MOD;PROCESS_START}
+"<"           {token_type=TOKEN_LT;PROCESS_START}
+"<="          {token_type=TOKEN_LEQ;PROCESS_START}
+">"           {token_type=TOKEN_GT;PROCESS_START}
+">="          {token_type=TOKEN_GEQ;PROCESS_START}
+"=="          {token_type=TOKEN_EQ;PROCESS_START}
+"!="          {token_type=TOKEN_NEQ;PROCESS_START}
+"&&"          {token_type=TOKEN_AND;PROCESS_START}
+"||"          {token_type=TOKEN_OR;PROCESS_START}
+"="           {token_type=TOKEN_ASSIGN;PROCESS_START}
+","           {token_type=TOKEN_COMMA;PROCESS_START}
 
-%{
-fprintf(stderr, "scan error: wtf is not a valid character\n");
-%}
+{IDENTIFIER}  {token_type=TOKEN_IDENTIFIER;PROCESS_START}
+{NUMBER}      {token_type=TOKEN_INTEGER_LITERAL;PROCESS_START}
+.             {token_type=TOKEN_UNDEFINED;PROCESS_START}
 
 %%
-
-//TODO: put this into
 
 int main(int argc, char **argv) {
   if (argc != 3) return -1;
@@ -68,9 +90,23 @@ int main(int argc, char **argv) {
 
   // start yylex
   while (yylex() != 0) {
-    printf("%s ", token_handler(token_type));
-    printf("%s\n",yytext);
+    // output content if not a keyword
+    switch(is_keyword(token_type)) {
+      case SCANNER_KEYWORD:
+        printf("%s\n", token_handler(token_type));
+        break;
+      case SCANNER_NOT_KEYWORD:
+        if (is_literal(token_type)) escape(yytext);
+        printf("%s %s\n",token_handler(token_type), yytext);
+        break;
+      case SCANNER_ERROR:
+        fprintf(stderr, "scan error: %c is not a valid character\n", yytext[0]);
+        exit(1);
+        break;
+    }
 
   }
+
+  return 0;
 
 }
