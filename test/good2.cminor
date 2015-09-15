@@ -6,3 +6,7 @@
 "\"\\""" // two strings, \"\\ and ""
 "/*string literal*/" /* this is also valid */
 "yello,\\\n \\\"\\\" world."
+/*integer literal*/
+8
+-10
++3

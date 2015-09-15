@@ -1,6 +1,6 @@
 //------keyword tests
 
-array boolean char else false for function if integer print return string true void while )(){[:;++--+-/^%<<==>====!==&&||]} /* TODO: add remaining keywords here... */
+array _array boolean char else false for function if integer print return string true void while )(){[:;++--+-/^%<<==>====!==&&||]} /* TODO: add remaining keywords here... */
 
 //------keyword tests end
 
