@@ -7,6 +7,8 @@ RESULT_PREFIX = result/good
 OSX_FLAG = -ll -lc
 LINUX_FLAG = -lgl
 
+all: osxbuild
+	
 flex: $(SCANNER_FILES) $(SCANNER_PATH)/scanner.l
 	flex -o $(SCANNER_PATH)/lex.yy.c $(SCANNER_PATH)/scanner.l
 

@@ -16,10 +16,10 @@ WHITESPACE  {DELIM}+
 LETTER      [a-zA-Z]
 DIGIT       [0-9]
 
-IDENTIFIER  (({LETTER}|_)+({DIGIT}|{LETTER}|_)*)
+IDENTIFIER  (({LETTER}|_)({DIGIT}|{LETTER}|_)*)
 NUMBER      {DIGIT}+
-CHAR        (\'([^\\\']|(\\.))?\')
-LITERAL     (\"([^\\\"\n]*(\\[^\"])*(\\\")*)*\")
+CHAR        (\'([^\\\']|(\\.))\')
+LITERAL     (\"([^\\\"\n]|(\\.))*\")
 
 %%
 
@@ -91,12 +91,31 @@ int main(int argc, char **argv) {
   // start yylex
   while (yylex() != 0) {
     // output content if not a keyword
+
+    // deal with length limit
+    switch(token_type) {
+      case TOKEN_IDENTIFIER:
+        if (yyleng > 256) {
+          fprintf(stderr, "scan error: %s is not a valid identifier, maximum length of an identifier is 256 but actual is %zu \n", yytext, yyleng);
+          exit(1);
+        }
+        break;
+      default:
+        break;
+    }
+
     switch(is_keyword(token_type)) {
       case SCANNER_KEYWORD:
         printf("%s\n", token_handler(token_type));
         break;
       case SCANNER_NOT_KEYWORD:
-        if (is_literal(token_type)) escape(yytext);
+
+        if (is_literal(token_type)) yyleng = escape(yytext);
+        if (token_type == TOKEN_STRING_LITERAL && yyleng > 256) {
+          fprintf(stderr, "scan error: %s is not a valid string, maximum length of a string is 256 but actual is %zu \n", yytext, yyleng);
+          exit(1);
+        }
+
         printf("%s %s\n",token_handler(token_type), yytext);
         break;
       case SCANNER_ERROR:

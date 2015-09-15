@@ -75,7 +75,7 @@ char is_literal(token_t tk);
 /* check if `tk` is a keyword */
 char is_keyword(token_t tk);
 
-void escape(char *str);
+int escape(char *str);
 
 token_t token_type;
 

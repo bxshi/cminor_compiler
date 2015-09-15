@@ -1,0 +1,3 @@
+"hello,\nworld"
+"hello,
+  wolrd" // unsupported char in string literal

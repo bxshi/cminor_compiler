@@ -202,7 +202,7 @@ char is_literal(token_t tk) {
   return tk == TOKEN_STRING_LITERAL || tk == TOKEN_CHAR_LITERAL;
 }
 
-void escape(char *str) {
+int escape(char *str) {
   int opos = 1; // position in the original string, skip the first "
   int tpos = 0; // position in the target string
 
@@ -254,4 +254,5 @@ void escape(char *str) {
     ++tpos; // move to next position
   }
   str[tpos] = '\0';
+  return tpos + 1;
 }
