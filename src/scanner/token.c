@@ -93,6 +93,9 @@ const char* token_handler(token_t tk) {
     case TOKEN_EXPONENT:
         return"EXPONENT";
         break;
+    case TOKEN_MULTIPLY:
+        return"MULTIPLY";
+        break;
     case TOKEN_DIVIDE:
         return"DIVIDE";
         break;
@@ -189,6 +192,7 @@ char is_keyword(token_t tk) {
     case TOKEN_IDENTIFIER:
     case TOKEN_COMMA:
     case TOKEN_INTEGER_LITERAL:
+    case TOKEN_MULTIPLY:
         return SCANNER_KEYWORD;
     case TOKEN_STRING_LITERAL:
     case TOKEN_CHAR_LITERAL:
@@ -244,8 +248,7 @@ int escape(char *str) {
           str[tpos] = '\?';
           break;
         default:
-          str[tpos] = '\\';
-          str[++tpos] = str[opos];
+          str[tpos] = str[opos];
       }
     } else {
       str[tpos] = str[opos];

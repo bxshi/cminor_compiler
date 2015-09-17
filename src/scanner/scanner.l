@@ -62,6 +62,7 @@ while         {token_type=TOKEN_WHILE;PROCESS_START}
 "-"           {token_type=TOKEN_MINUS;PROCESS_START}
 "+"           {token_type=TOKEN_ADD;PROCESS_START}
 "^"           {token_type=TOKEN_EXPONENT;PROCESS_START}
+"*"           {token_type=TOKEN_MULTIPLY;PROCESS_START}
 "/"           {token_type=TOKEN_DIVIDE;PROCESS_START}
 "%"           {token_type=TOKEN_MOD;PROCESS_START}
 "<"           {token_type=TOKEN_LT;PROCESS_START}
