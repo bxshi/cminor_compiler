@@ -1,6 +1,6 @@
 #ifndef EXPR_H
 #define EXPR_H
-#define NULL 0
+#define nullptr 0
 
 #include "symbol.h"
 
@@ -43,9 +43,15 @@ struct expr {
 	struct symbol *symbol;
 	int literal_value;
 	const char * string_literal;
+	struct stmt * expr_list;
+
+	/* used by expr_list */
+	struct expr *next;
 };
 
 struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right );
+
+struct expr * expr_create_function_call(const char *ident, struct stmt *expr_list);
 
 struct expr * expr_create_name( const char *n );
 struct expr * expr_create_boolean_literal( int c );

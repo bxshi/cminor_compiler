@@ -3,15 +3,16 @@
 	struct stmt *stmt;
 	struct expr *expr;
 	struct type *type;
-	struct param *param;
+	struct param_list *param_list;
+	char * str;
 };
 
 %type <decl> program decl_list decl
-%type <stmt> stmt stmt_list nonempty_stmt_list expr_list nonempty_expr_list
-%type <expr> expr primary_expr secondary_expr third_expr fourth_expr fifth_expr sixth_expr seventh_expr eighth_expr ninth_expr optional_expr
-%type <param> param_list nonempty_param_list param 
+%type <stmt> stmt stmt_list nonempty_stmt_list 
+%type <expr> expr primary_expr secondary_expr third_expr fourth_expr fifth_expr sixth_expr seventh_expr eighth_expr ninth_expr optional_expr expr_list nonempty_expr_list
+%type <param_list> param_list nonempty_param_list param 
 %type <type> type 
-%type <char*> ident
+%type <str> ident
 
 %token TOKEN_STRING_LITERAL
 %token TOKEN_CHAR_LITERAL
@@ -55,7 +56,7 @@
 %token TOKEN_MULTIPLY
 %token TOKEN_DIVIDE
 %token TOKEN_MOD
-%token TOKEN_ASSSIGN
+%token TOKEN_ASSIGN
 
 %token TOKEN_LT
 %token TOKEN_LEQ
@@ -70,16 +71,23 @@
 %token TOKEN_UNDEFINED /* defined but not used */
 
 %{
+	#include <stdio.h>
+	#include <stdlib.h>
+
 	#include "./type.h"
   #include "./decl.h"
 	#include "./expr.h"
   #include "./stmt.h"
+	#include "./param_list.h"
 
 	extern char *yytext;
 	extern int yylex();
 	extern int yyerror(char *str);
 
-	#define NULL 0
+	#define nullptr 0
+
+	extern struct decl* root = nullptr;
+
 %}
 
 %nonassoc "then"
@@ -87,22 +95,22 @@
 
 %%
 
-program : decl_list { $$ = $1; }
+program : decl_list { $$ = $1; root = $$; }
 				;
 
 ident : TOKEN_IDENTIFIER { $$ = yytext; }
 			;
 
-type : TOKEN_STRING { $$ = type_create(TYPE_STRING, NULL, NULL); }
-		 | TOKEN_INTEGER { $$ = type_create(TYPE_INTEGER, NULL, NULL); }
-		 | TOKEN_BOOLEAN { $$ = type_create(TYPE_BOOLEAN, NULL, NULL); }
-		 | TOKEN_CHAR { $$ = type_create(TYPE_CHAR, NULL, NULL); }
-		 | TOKEN_VOID { $$ = type_create(TYPE_VOID, NULL, NULL); }
-		 | TOKEN_ARRAY TOKEN_LEFT_BRACKET expr TOKEN_RIGHT_BRACKET type { $$ = type_create(TYPE_ARRAY, $3, $5); }
+type : TOKEN_STRING { $$ = type_create(TYPE_STRING, nullptr, nullptr); }
+		 | TOKEN_INTEGER { $$ = type_create(TYPE_INTEGER, nullptr, nullptr); }
+		 | TOKEN_BOOLEAN { $$ = type_create(TYPE_BOOLEAN, nullptr, nullptr); }
+		 | TOKEN_CHAR { $$ = type_create(TYPE_CHAR, nullptr, nullptr); }
+		 | TOKEN_VOID { $$ = type_create(TYPE_VOID, nullptr, nullptr); }
+		 | TOKEN_ARRAY TOKEN_LEFT_BRACKET expr TOKEN_RIGHT_BRACKET type { $$ = type_create(TYPE_ARRAY, param_list_create(nullptr, nullptr, $3, nullptr), $5); }
 		 | TOKEN_FUNCTION type TOKEN_LEFT_PARENTHESIS param_list TOKEN_RIGHT_PARENTHESIS { $$ = type_create(TYPE_FUNCTION, $4,$2); }
 		 ;
 
-param_list : /* empty */ { $$ = NULL; }
+param_list : /* empty */ { $$ = nullptr; }
 					 | nonempty_param_list { $$ = $1; }
 					 ;
 
@@ -110,30 +118,30 @@ nonempty_param_list : nonempty_param_list TOKEN_COMMA param { $1->next = $3; $$ 
 										| param { $$ = $1; }
 										;
 
-param : ident TOKEN_COLON type { $$ = param_list_create($1, $3, NULL); }
+param : ident TOKEN_COLON type { $$ = param_list_create($1, $3, nullptr, nullptr); }
 			;
 
 
 decl_list : decl decl_list { $1->next = $2; $$ = $1; }
-					| /* empty */ { $$ = NULL; }
+					| /* empty */ { $$ = nullptr; }
 					;
 
-decl : ident TOKEN_COLON type TOKEN_ASSSIGN expr TOKEN_SEMI_COLON /* ident : type = expr; */ { $$ = decl_create($1, $3, $5, NULL, NULL); }
-		 | ident TOKEN_COLON type TOKEN_SEMI_COLON /* ident : type; */ { $$ = decl_create($1, $3, NULL, NULL, NULL); }
-		 | ident TOKEN_COLON type TOKEN_ASSSIGN TOKEN_LEFT_CURLY_BRACKET stmt_list TOKEN_RIGHT_CURLY_BRACKET /* ident : type = { stmt_list } */ { $$ = decl_create($1, $3, NULL, $6, NULL); }
+decl : ident TOKEN_COLON type TOKEN_ASSIGN expr TOKEN_SEMI_COLON /* ident : type = expr; */ { $$ = decl_create($1, $3, $5, nullptr, nullptr); }
+		 | ident TOKEN_COLON type TOKEN_SEMI_COLON /* ident : type; */ { $$ = decl_create($1, $3, nullptr, nullptr, nullptr); }
+		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET stmt_list TOKEN_RIGHT_CURLY_BRACKET /* ident : type = { stmt_list } */ { $$ = decl_create($1, $3, nullptr, $6, nullptr); }
 		 ;
 
-stmt : decl { $$ = stmt_create(STMT_DECL, $1, NULL, NULL, NULL, NULL); }
-		 | expr TOKEN_SEMI_COLON {$$ = stmt_create(STMT_EXPR, NULL, NULL, $1, NULL, NULL); }
-		 | TOKEN_LEFT_CURLY_BRACKET stmt_list TOKEN_RIGHT_CURLY_BRACKET { $$ = stmt_create(STMT_BLOCK, NULL, NULL, NULL, NULL, $2, NULL); }
-		 | TOKEN_IF TOKEN_LEFT_PARENTHESIS expr TOKEN_RIGHT_PARENTHESIS stmt /*TODO: add if-else and fix dangling else */ %prec "then" { $$ = stmt_create(STMT_IF_ELSE, NULL, NULL, $3, NULL, $5, NULL); }
-		 | TOKEN_IF TOKEN_LEFT_PARENTHESIS expr TOKEN_RIGHT_PARENTHESIS stmt TOKEN_ELSE stmt /*TODO: add if-else and fix dangling else */ { $$ = stmt_create(STMT_IF_ELSE, NULL, NULL, $3, NULL, $5, $7); }
-		 | TOKEN_RETURN expr TOKEN_SEMI_COLON { $$ = stmt_create(STMT_RETURN, NULL, NULL, $2, NULL, NULL, NULL); }
-		 | TOKEN_PRINT expr_list TOKEN_SEMI_COLON  { $$ = stmt_create(STMT_PRINT, NULL, NULL, $2, NULL, NULL, NULL); }
-		 | TOKEN_FOR TOKEN_LEFT_PARENTHESIS optional_expr TOKEN_SEMI_COLON optional_expr TOKEN_SEMI_COLON optional_expr TOKEN_RIGHT_PARENTHESIS stmt { $$ = stmt_create(STMT_FOR, NULL, $3, $5, $7, $9, NULL); }
+stmt : decl { $$ = stmt_create(STMT_DECL, $1, nullptr, nullptr, nullptr, nullptr, nullptr); }
+		 | expr TOKEN_SEMI_COLON {$$ = stmt_create(STMT_EXPR, nullptr, nullptr, $1, nullptr, nullptr, nullptr); }
+		 | TOKEN_LEFT_CURLY_BRACKET stmt_list TOKEN_RIGHT_CURLY_BRACKET { $$ = stmt_create(STMT_BLOCK, nullptr, nullptr, nullptr, nullptr, $2, nullptr); }
+		 | TOKEN_IF TOKEN_LEFT_PARENTHESIS expr TOKEN_RIGHT_PARENTHESIS stmt /*TODO: add if-else and fix dangling else */ %prec "then" { $$ = stmt_create(STMT_IF_ELSE, nullptr, nullptr, $3, nullptr, $5, nullptr); }
+		 | TOKEN_IF TOKEN_LEFT_PARENTHESIS expr TOKEN_RIGHT_PARENTHESIS stmt TOKEN_ELSE stmt /*TODO: add if-else and fix dangling else */ { $$ = stmt_create(STMT_IF_ELSE, nullptr, nullptr, $3, nullptr, $5, $7); }
+		 | TOKEN_RETURN expr TOKEN_SEMI_COLON { $$ = stmt_create(STMT_RETURN, nullptr, nullptr, $2, nullptr, nullptr, nullptr); }
+		 | TOKEN_PRINT expr_list TOKEN_SEMI_COLON  { $$ = stmt_create(STMT_PRINT, nullptr, nullptr, $2, nullptr, nullptr, nullptr); }
+		 | TOKEN_FOR TOKEN_LEFT_PARENTHESIS optional_expr TOKEN_SEMI_COLON optional_expr TOKEN_SEMI_COLON optional_expr TOKEN_RIGHT_PARENTHESIS stmt { $$ = stmt_create(STMT_FOR, nullptr, $3, $5, $7, $9, nullptr); }
 		 ;
 
-stmt_list : /* empty */ { $$ = NULL; }
+stmt_list : /* empty */ { $$ = nullptr; }
 					| nonempty_stmt_list { $$ = $1; }
 					;
 
@@ -144,21 +152,21 @@ nonempty_stmt_list : nonempty_stmt_list stmt { $1->next = $2; $$ = $1; }
 primary_expr : ident { $$ = expr_create_name($1); }
 						 | TOKEN_INTEGER_LITERAL { $$ = expr_create_integer_literal(atoi(yytext)); }
 						 | TOKEN_STRING_LITERAL { $$ = expr_create_string_literal(yytext); }
-						 | TOKEN_CHAR_LITERAL { $$ = expr_create_character_literal(atoi(yytext[0])); }
+						 | TOKEN_CHAR_LITERAL { $$ = expr_create_character_literal((int)(yytext[0])); }
 						 | TOKEN_TRUE { $$ = expr_create_boolean_literal(1); }
 						 | TOKEN_FALSE { $$ = expr_create_boolean_literal(0); }
 						 | TOKEN_LEFT_PARENTHESIS optional_expr TOKEN_RIGHT_PARENTHESIS { $$ = $2; }
-						 | ident TOKEN_LEFT_PARENTHESIS expr_list TOKEN_RIGHT_PARENTHESIS { $$ = expr_create(EXPR_CALL, $1, $3); }
+						 | ident TOKEN_LEFT_PARENTHESIS expr_list TOKEN_RIGHT_PARENTHESIS { $$ = expr_create(EXPR_CALL, expr_create_name($1), $3); }
 						 ;
 
 secondary_expr : primary_expr { $$ = $1; }
-						   | secondary_expr TOKEN_INCREMENT { $$ = expr_create(EXPR_INCR, $1); }
-						   | secondary_expr TOKEN_DECREMENT { $$ = expr_create(EXPR_DECR, $1); }
+						   | secondary_expr TOKEN_INCREMENT { $$ = expr_create(EXPR_INCR, nullptr, $1); }
+						   | secondary_expr TOKEN_DECREMENT { $$ = expr_create(EXPR_DECR, nullptr, $1); }
 						   ;
 
 third_expr : secondary_expr { $$ = $1; }
-					 | TOKEN_MINUS third_expr { $$ = expr_create(EXPR_SUB, NULL, $2); }
-					 | TOKEN_NOT third_expr  { $$ = expr_create(EXPR_NOT, NULL, $2); }
+					 | TOKEN_MINUS third_expr { $$ = expr_create(EXPR_SUB, nullptr, $2); }
+					 | TOKEN_NOT third_expr  { $$ = expr_create(EXPR_NOT, nullptr, $2); }
 					 ;
 
 fourth_expr : third_expr { $$ = $1; }
@@ -194,20 +202,25 @@ ninth_expr : eighth_expr { $$ = $1; }
 					 ;
 
 expr : ninth_expr { $$ = $1; }
-		 | ident TOKEN_ASSSIGN ninth_expr { $$ = expr_create(EXPR_ASSIGN, $1, $3); }
-		 | ident TOKEN_ASSSIGN TOKEN_LEFT_CURLY_BRACKET expr_list TOKEN_RIGHT_CURLY_BRACKET /* {1,2,3} */ { $$ = expr_create(EXPR_ASSIGN, $1, $4); }
+		 | ident TOKEN_ASSIGN ninth_expr { $$ = expr_create(EXPR_ASSIGN, expr_create_name($1), $3); }
+		 | ident TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET expr_list TOKEN_RIGHT_CURLY_BRACKET /* {1,2,3} */ { $$ = expr_create(EXPR_ASSIGN, expr_create_name($1), $4); }
 		 ;
 
-optional_expr : /* empty */ { $$ = NULL; }
+optional_expr : /* empty */ { $$ = nullptr; }
 							| expr { $$ = $1; }
 							;
 
-expr_list : /* empty */ { $$ = NULL; }
+expr_list : /* empty */ { $$ = nullptr; }
 					| nonempty_expr_list { $$ = $1; }
 					;
 
 nonempty_expr_list : nonempty_expr_list TOKEN_COMMA expr { $1->next = $3; $$ = $1; }
-									 | expr { $$ = stmt_create(STMT_EXPR, NULL, NULL, $1, NULL, NULL, NULL); }
+									 | expr { $$ = $1; }
 									 ;
 
 %%
+
+int yyerror(char *str) {
+	fprintf(stderr, "parse error: %s \n", str);
+	return -1;
+}
