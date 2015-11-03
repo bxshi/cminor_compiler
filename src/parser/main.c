@@ -31,8 +31,6 @@ int main(int argc, char **argv) {
 	// yyparse
 	while(!feof(yyin)) {
 		if (yyparse() == 0) {
-
-			printf("-----prettify-----\n");
 			
 			if (yylval.decl) {
 				decl_print(yylval.decl, 0);

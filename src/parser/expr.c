@@ -54,7 +54,6 @@ struct expr * expr_create_character_literal(int c) {
 struct expr * expr_create_string_literal(const char *str) {
 	struct expr *e = expr_create(EXPR_STRING, nullptr, nullptr);
 	e->string_literal = str;
-	printf("created string_literal %s strlen %lu ", e->string_literal, strlen(e->string_literal));
 	return e;
 }
 

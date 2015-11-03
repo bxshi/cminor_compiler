@@ -18,3 +18,7 @@ ${PARSER_PATH}/parser.tab.c parser.tab.h : ${PARSER_PATH}/parser.bison
 
 clean:
 	rm -f ${PARSER_PATH}/parser.tab.* ${PARSER_PATH}/parser.output ${PARSER_PATH}/scanner.c ${PARSER_PATH}/*.o cminor
+
+test: cminor ./test/* test.sh
+	./test.sh
+
