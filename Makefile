@@ -1,29 +1,20 @@
-SCANNER_PATH = src/scanner
 
-SCANNER_FILES = $(SCANNER_PATH)/token.c $(SCANNER_PATH)/token.h
+PARSER_PATH = ./src/parser
 
-RESULT_PREFIX = result/good
+C_FLAGS = -ll -lc
 
-OSX_FLAG = -ll -lc
-LINUX_FLAG = -lgl
+cminor : ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/param_list.o ${PARSER_PATH}/decl.o ${PARSER_PATH}/expr.o ${PARSER_PATH}/stmt.o ${PARSER_PATH}/token.o ${PARSER_PATH}/type.o ${PARSER_PATH}/main.o
+	gcc ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/param_list.o ${PARSER_PATH}/decl.o ${PARSER_PATH}/expr.o ${PARSER_PATH}/stmt.o ${PARSER_PATH}/token.o ${PARSER_PATH}/type.o ${PARSER_PATH}/main.o -o $@ ${C_FLAGS}
 
-all: osxbuild
-	
-flex: $(SCANNER_FILES) $(SCANNER_PATH)/scanner.l
-	flex -o $(SCANNER_PATH)/lex.yy.c $(SCANNER_PATH)/scanner.l
 
-osxbuild: flex
-	gcc -c $(SCANNER_PATH)/lex.yy.c
-	gcc -c ${SCANNER_FILES}
-	gcc -o cminor lex.yy.o token.o $(OSX_FLAG)
+${PARSER_PATH}/%.o: ${PARSER_PATH}/%.c ${PARSER_PATH}/*.h
+	gcc -Wall -c $< -o $@ -g
 
-test: osxbuild cminor
-	./cminor -scan test/good0.cminor > good0.test
-	diff $(RESULT_PREFIX)0.result good0.test
-	./cminor -scan test/good1.cminor > good1.test
-	diff $(RESULT_PREFIX)1.result good1.test
-	./cminor -scan test/good2.cminor > good2.test
-	diff $(RESULT_PREFIX)2.result good2.test
+${PARSER_PATH}/scanner.c : ${PARSER_PATH}/scanner.flex ${PARSER_PATH}/parser.tab.h
+	flex -o${PARSER_PATH}/scanner.c ${PARSER_PATH}/scanner.flex
+
+${PARSER_PATH}/parser.tab.c parser.tab.h : ${PARSER_PATH}/parser.bison
+	yacc -d -b${PARSER_PATH}/parser -v ${PARSER_PATH}/parser.bison
+
 clean:
-	rm lex.yy.o cminor token.o $(SCANNER_PATH)/lex.yy.c $(SCANNER_PATH)/token.h.gch
-	rm *.test
+	rm -f ${PARSER_PATH}/parser.tab.* ${PARSER_PATH}/parser.output ${PARSER_PATH}/scanner.c ${PARSER_PATH}/*.o cminor

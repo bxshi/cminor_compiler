@@ -3,7 +3,7 @@ cminor : parser.tab.o scanner.o param_list.o decl.o expr.o stmt.o token.o type.o
 
 
 %.o: %.c *.h
-	gcc -Wall -c $< -o $@
+	gcc -Wall -c $< -o $@ -g
 
 scanner.c : scanner.flex parser.tab.h
 	flex -oscanner.c scanner.flex

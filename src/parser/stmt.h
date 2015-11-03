@@ -24,6 +24,8 @@ struct stmt {
 	struct stmt *body;
 	struct stmt *else_body;
 	struct stmt *next;
+	int nline; // starts with a new line
+	int eline; // end starts a new line
 };
 
 struct stmt * stmt_create( stmt_kind_t kind, struct decl *d, struct expr *init_expr, struct expr *e, struct expr *next_expr, struct stmt *body, struct stmt *else_body );

@@ -28,7 +28,9 @@ typedef enum {
 	EXPR_GEQ,
 	EXPR_AND,
 	EXPR_OR,
-	EXPR_ASSIGN
+	EXPR_ASSIGN,
+	EXPR_PARENT,
+	EXPR_CURLY
 	/* many more types to add here */
 } expr_t;
 
@@ -43,7 +45,7 @@ struct expr {
 	struct symbol *symbol;
 	int literal_value;
 	const char * string_literal;
-	struct stmt * expr_list;
+	struct expr * expr_list;
 
 	/* used by expr_list */
 	struct expr *next;
@@ -51,13 +53,15 @@ struct expr {
 
 struct expr * expr_create( expr_t kind, struct expr *left, struct expr *right );
 
-struct expr * expr_create_function_call(const char *ident, struct stmt *expr_list);
+struct expr * expr_create_function_call(const char *ident, struct expr *expr_list);
 
 struct expr * expr_create_name( const char *n );
 struct expr * expr_create_boolean_literal( int c );
 struct expr * expr_create_integer_literal( int c );
 struct expr * expr_create_character_literal( int c );
 struct expr * expr_create_string_literal( const char *str );
+struct expr * expr_create_parent(struct expr * subexpr);
+struct expr * expr_create_curly(struct expr * subexpr);
 
 void expr_print( struct expr *e );
 
