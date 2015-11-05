@@ -1,0 +1,1 @@
+x : array [2] function void (i : integer) = {};

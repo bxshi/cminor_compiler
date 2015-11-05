@@ -187,7 +187,7 @@ primary_expr : ident { $$ = expr_create_name($1); }
 						 | char_literal { $$ = $1; }
 						 | TOKEN_TRUE { $$ = expr_create_boolean_literal(1); }
 						 | TOKEN_FALSE { $$ = expr_create_boolean_literal(0); }
-						 | TOKEN_LEFT_PARENTHESIS optional_expr TOKEN_RIGHT_PARENTHESIS { $$ = expr_create_parent($2); }
+						 | TOKEN_LEFT_PARENTHESIS expr TOKEN_RIGHT_PARENTHESIS { $$ = expr_create_parent($2); }
 						 | ident TOKEN_LEFT_PARENTHESIS expr_list TOKEN_RIGHT_PARENTHESIS { $$ = expr_create_function_call($1, $3); }
 						 | ident TOKEN_LEFT_BRACKET expr TOKEN_RIGHT_BRACKET { $$ = expr_create_subscript($1, $3); }
 						 ;

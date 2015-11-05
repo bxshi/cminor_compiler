@@ -48,7 +48,7 @@ main : function void (argc : integer, argv : array [argc] integer) = {
 
 	return x(1,2,3,"true",false);
 
-	{{{{{();}}}}}
+	{{{{{(1);}}}}}
 
 	print a + 5, 4^9;
 

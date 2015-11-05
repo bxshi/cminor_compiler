@@ -2,7 +2,7 @@
 main : function void (argc : integer, argv : array [argc] integer) = {
 	// primary expr
 
-x : integer = 1;x;10;"string_literal";'c';true;false;();(a +b);x (10, "string literal", 'c'); y();
+x : integer = 1;x;10;"string_literal";'c';true;false;(1);d();(a +b);x (10, "string literal", 'c'); y();
 
 nested : function integer() = {
 	a = b;
