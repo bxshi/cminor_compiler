@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.tab.h"
 #include "token.h"
 #include "decl.h"
 #include "expr.h"

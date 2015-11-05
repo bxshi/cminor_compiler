@@ -1,6 +1,5 @@
 %{
   #include "token.h"
-	#include "parser.tab.h"
 %}
 
 %{
