@@ -19,8 +19,6 @@ extern char* yytext;
 extern int token_type;
 extern size_t yyleng;
 
-extern YYSTYPE yylval;
-
 int main(int argc, char **argv) {
 
 	if (argc != 3) return 1;
