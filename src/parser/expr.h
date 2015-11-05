@@ -30,7 +30,8 @@ typedef enum {
 	EXPR_OR,
 	EXPR_ASSIGN,
 	EXPR_PARENT,
-	EXPR_CURLY
+	EXPR_CURLY,
+	EXPR_SUBSCRIPT
 	/* many more types to add here */
 } expr_t;
 
@@ -62,6 +63,7 @@ struct expr * expr_create_character_literal( int c );
 struct expr * expr_create_string_literal( const char *str );
 struct expr * expr_create_parent(struct expr * subexpr);
 struct expr * expr_create_curly(struct expr * subexpr);
+struct expr * expr_create_subscript(const char *ident, struct expr *expr);
 
 void expr_print( struct expr *e );
 

@@ -57,6 +57,11 @@ struct expr * expr_create_string_literal(const char *str) {
 	return e;
 }
 
+struct expr * expr_create_subscript(const char *ident, struct expr *expr) {
+	struct expr *e = expr_create(EXPR_SUBSCRIPT, expr_create_name(ident), expr);
+	return e;
+}
+
 void expr_print(struct expr *e) {
 	if (!e) return;
 
@@ -179,6 +184,12 @@ void expr_print(struct expr *e) {
 			printf("{");
 			expr_print(e->right);
 			printf("}");
+			break;
+		case EXPR_SUBSCRIPT:
+			expr_print(e->left);
+			printf("[");
+			expr_print(e->right);
+			printf("]");
 			break;
 		default:
 			printf("undefined expr!\n");

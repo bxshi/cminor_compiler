@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for testfile in ./test/*.cminor
+for testfile in ./test/good*.cminor
 do
 	if cminor -parse $testfile > $testfile.out
 	then

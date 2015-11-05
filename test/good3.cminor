@@ -38,6 +38,10 @@ nested : function integer() = {
 		z = {};
 
 	}
+
+	a[1];
+	b[x];
+
 }
 
 nested();
