@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
 			if (yylval.decl) {
 				decl_print(yylval.decl, 0);
 			}
+			return 0;
 
 		} else {
 			printf("parse done incorrectly.\n");
