@@ -1,0 +1,17 @@
+x : integer = 0;
+
+main : function void (y : integer) = {
+	y++;
+	y++;
+
+	x = y;
+	x : boolean = 0;
+	y = x + 1 + y;
+
+	f : function void(x : integer) = {
+		x++;
+	}
+
+	f(y);
+}
+

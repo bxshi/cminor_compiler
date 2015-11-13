@@ -135,8 +135,8 @@ decl_list : nonempty_decl_list {$$ = $1;}
 decl : ident TOKEN_COLON type TOKEN_ASSIGN expr TOKEN_SEMI_COLON /* ident : type = expr; */ {$$ = decl_create($1, $3, $5, nullptr, nullptr); }
 		 | ident TOKEN_COLON type TOKEN_SEMI_COLON /* ident : type; */ {$$ = decl_create($1, $3, nullptr, nullptr, nullptr); }
 
-		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET TOKEN_RIGHT_CURLY_BRACKET /* ident : type = { stmt_list } */ {printf("get this!\n"); $$ = decl_create_func($1, $3, nullptr, nullptr, nullptr, 0); }
-		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET TOKEN_RIGHT_CURLY_BRACKET TOKEN_SEMI_COLON /* ident : type = { stmt_list } */ {printf("get this!\n"); $$ = decl_create($1, $3, nullptr, nullptr, nullptr); }
+		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET TOKEN_RIGHT_CURLY_BRACKET /* ident : type = { stmt_list } */ {$$ = decl_create_func($1, $3, nullptr, nullptr, nullptr, 0); }
+		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET TOKEN_RIGHT_CURLY_BRACKET TOKEN_SEMI_COLON /* ident : type = { stmt_list } */ {$$ = decl_create($1, $3, nullptr, nullptr, nullptr); }
 		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET nonempty_stmt_list TOKEN_RIGHT_CURLY_BRACKET /* ident : type = { stmt_list } */ {$$ = decl_create_func($1, $3, nullptr, $6, nullptr, 0); }
 		 | ident TOKEN_COLON type TOKEN_ASSIGN TOKEN_LEFT_CURLY_BRACKET nonempty_expr_list TOKEN_RIGHT_CURLY_BRACKET TOKEN_SEMI_COLON /* array */ {$$ = decl_create($1, $3, $6, nullptr, nullptr);}
 		 ;
