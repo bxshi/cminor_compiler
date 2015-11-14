@@ -8,7 +8,7 @@ cminor : ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/par
 
 
 ${PARSER_PATH}/%.o: ${PARSER_PATH}/%.c ${PARSER_PATH}/*.h
-	gcc -Wall -c $< -o $@
+	gcc -Wall -c $< -o $@ -g
 
 ${PARSER_PATH}/scanner.c : ${PARSER_PATH}/scanner.flex ${PARSER_PATH}/parser.tab.h
 	flex -o${PARSER_PATH}/scanner.c ${PARSER_PATH}/scanner.flex

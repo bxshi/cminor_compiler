@@ -1,4 +1,5 @@
 #include "expr.h"
+#include "symbol.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +9,7 @@ struct expr * expr_create(expr_t kind, struct expr *left, struct expr *right) {
 	e->kind = kind;
 	e->left = left;
 	e->right = right;
+	e->symbol = 0;
 	return e;
 }
 

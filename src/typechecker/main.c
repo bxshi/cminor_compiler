@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 		while(!feof(yyin)) {
 			if (yyparse() == 0) {
 				if (yylval.decl) {
-					init();
+					init(1);
 					decl_resolve(yylval.decl);
 				}
 				return 0;
@@ -65,6 +65,13 @@ int main(int argc, char **argv) {
 		while(!feof(yyin)) {
 			if (yyparse() == 0) {
 				if (yylval.decl) {
+					init(0);
+					decl_resolve(yylval.decl);
+					if (!resolve_result()) {
+						decl_typecheck(yylval.decl);
+					} else {
+						return 1;
+					}
 				}
 				return 0;
 			} else {
