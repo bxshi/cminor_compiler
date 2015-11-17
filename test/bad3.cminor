@@ -1,1 +1,12 @@
-;
+x : integer = 0;
+
+main : function integer (y : integer) = {
+	y++;
+	x++;
+
+	x : boolean = 0;
+	x = y;
+
+	x : function array [10] integer ();
+
+}

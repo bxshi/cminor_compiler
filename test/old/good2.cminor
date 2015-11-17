@@ -1,0 +1,29 @@
+/* Basic declarations */
+
+x : integer; // a
+x : integer = 00; // b
+x : string; // c
+x : string = "abc";
+x : char; // adfa
+x : char = 'c';
+x : boolean = true;
+x : boolean;
+
+x : array [x] char = {'a',1,true,"abc", 'b'};
+x : array [x] function void (x : integer);
+
+x:integer=998; // decl_1
+y:boolean; // decl_2 
+z:array[5]integer; // decl_1 array
+x:array[5]boolean={1,2,3,4}; // decl_3
+x:function integer(a:boolean,b:char,c:string)={ a = b; b = c + a; return a + b + c;}
+
+// nested declaration 
+
+x : function array [x + y] integer (a : function integer ()) = { return; } 
+
+// function with empty body
+x : function void () = {}
+
+// function without body
+x : function void();

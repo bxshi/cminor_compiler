@@ -1,0 +1,50 @@
+
+main : function void (argc : integer, argv : array [argc] integer) = {
+	// primary expr
+
+x : integer = 1;x;10;"string_literal";'c';true;false;(1);d();(a +b);x (10, "string literal", 'c'); y();
+
+nested : function integer() = {
+	a = b;
+	a++;
+	b--;
+
+	nested2 : function void () = {
+		- -b;
+		-9;
+
+		!true;
+		!9;
+
+		8 ^ 10;
+
+		12 * y - 5;
+
+		15 / 8 * 6 % 3;
+
+		x + yyb8 - 2;
+
+		y == (x != 3) >= 1;
+		a > 9;
+		a >= 0;
+		b < 23;
+		b <= 23;
+
+		x && y || b;
+
+		x = x && y / 8;
+		y = {x *6 , 3+9, 23/x9+7};
+
+		z = {};
+
+	}
+
+	a[1];
+	b[x];
+
+}
+
+nested();
+nested2();
+
+}

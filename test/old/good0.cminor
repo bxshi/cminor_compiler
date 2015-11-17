@@ -1,0 +1,2 @@
+x : integer = {};
+y : array [10] function void () = {x,y,x+y,z};

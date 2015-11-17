@@ -1,34 +1,18 @@
-// test comparotors and boolean logic
-if ( a >= 5 )
-{
-		print "a >= 5";
+main : function integer () = {
+	x : integer;
+
+	if (x == 1) return true;
+
+	return x;
 }
-if( a > 5 )
-{
-		print "a > 5";
+
+fun : function void () = {
+	return true;
 }
-if( a <= 5 )
-{
-		print "a <= 5";
+
+fun2 : function integer() = {
+	x : integer = 0;
 }
-if( a < 5 )
-{
-		print "a < 5";
-}
-if( a == 5 )
-{
-		print "a == 5";
-}
-if( a != 5 )
-{
-		print "a != 5";
-}
-a = 5; // test assigment
-if (a || b)
-{
-		print " a || b is true";
-}
-if (a && b)
-{
-		print " a && b is true";
+
+func3 : function integer() = {
 }

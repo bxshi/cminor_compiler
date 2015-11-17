@@ -10,6 +10,7 @@ struct expr * expr_create(expr_t kind, struct expr *left, struct expr *right) {
 	e->left = left;
 	e->right = right;
 	e->symbol = 0;
+	e->next = 0;
 	return e;
 }
 

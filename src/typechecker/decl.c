@@ -36,12 +36,14 @@ void decl_print(struct decl *d, int indent) {
 
 	if (d->value) {
 		printf(" = ");
-		if (d->type->kind == TYPE_ARRAY) printf("{");
+		if (d->type->kind == TYPE_ARRAY)
 		expr_print(d->value);
+		/*
 		if (d->type->kind == TYPE_ARRAY) {
 			if(indent > 0) printf("%*c", indent * 2, ' '); // indent
 			printf("}");
 		}
+		*/
 	}
 
 	if (d->type->kind == TYPE_FUNCTION && !d->func_declaration) {

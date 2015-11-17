@@ -12,8 +12,16 @@ int scope_level = 0;
 int resolve_error = 0;
 int resolve_print = 1;
 
+int typecheck_error = 0;
+
+int returned = 0;
+
 int resolve_result() {
 	return resolve_error;
+}
+
+int typecheck_result() {
+	return typecheck_error;
 }
 
 void init(int print_resolve) {
@@ -80,11 +88,33 @@ void decl_resolve(struct decl *d) {
 
 	expr_resolve(d->value);
 
+	if (d->type->kind == TYPE_FUNCTION && !d->code) {
+		if (d->type->subtype->kind != TYPE_VOID) {
+			printf("type error: function %s returns void, should return ", d->name);
+			type_print(d->type->subtype);
+			printf("\n");
+			typecheck_error++;
+		}
+	}
+	
 
 	if (d->code) {
 		scope_enter();
 		param_list_resolve(d->type->params, 0);
-		stmt_resolve_func(d->code);
+		int old_rtn = returned;
+		returned = 0;
+		stmt_resolve(d->code);
+		if (returned == 0 && d->type->subtype->kind != TYPE_VOID) {
+			printf("type error: function %s returns void, should return ", d->name);
+			type_print(d->type->subtype);
+			printf("\n");
+			typecheck_error++;
+		}
+		returned = old_rtn;
+		scope_exit();
+	} else { // array
+		scope_enter();
+		param_list_resolve(d->type->params, 0);
 		scope_exit();
 	}
 
@@ -111,8 +141,20 @@ void expr_resolve(struct expr *e) {
 		e->symbol = sym;
 	}
 
-	if (e->kind == EXPR_CALL) 
+	if (e->kind == EXPR_CALL) {
+		struct symbol *sym = scope_lookup(e->left->name);
+		if (!sym) {
+			printf("resolve error: %s is not defined\n", e->name);
+			resolve_error++;
+		} else {
+			if (resolve_print) {
+				printf("%s resolves to ", e->left->name);
+				symbol_print(sym);
+			}
+		}
+		e->symbol = sym;
 		expr_resolve(e->expr_list);
+	}
 
 	expr_resolve(e->next);
 
@@ -153,6 +195,7 @@ void stmt_resolve(struct stmt *s) {
 			expr_resolve(s->expr);
 			break;
 		case STMT_RETURN:
+			returned++;
 			expr_resolve(s->expr);
 			break;
 		case STMT_BLOCK:
@@ -168,15 +211,20 @@ void stmt_resolve(struct stmt *s) {
 
 void param_list_resolve(struct param_list *p, int idx) {
 	if (!p) return;
-	struct symbol *sym = scope_local_lookup(p->name);
-	if (sym != 0 && sym->kind == SYMBOL_PARAM) {
-		printf("resolve error: %s is already defined\n", p->name);
-		resolve_error++;
-	} else {
-		sym = symbol_create_param(idx, p->type, p->name);
+	if (p->type == 0) { // array
 		expr_resolve(p->expr);
-		p->symbol = sym;
-		scope_bind(p->name, sym);
+		p->symbol = symbol_create_param(idx, type_create(TYPE_INTEGER, 0, 0), 0);
+	} else {
+		struct symbol *sym = scope_local_lookup(p->name);
+		if (sym != 0 && sym->kind == SYMBOL_PARAM) {
+			printf("resolve error: %s is already defined\n", p->name);
+			resolve_error++;
+		} else {
+			sym = symbol_create_param(idx, p->type, p->name);
+			expr_resolve(p->expr);
+			p->symbol = sym;
+			scope_bind(p->name, sym);
+		}
 	}
 
 	param_list_resolve(p->next, idx + 1);
@@ -242,6 +290,11 @@ struct type * expr_typecheck(struct expr *e) {
 	struct type *lhs = expr_typecheck(0);
 	struct type *rhs = expr_typecheck(0);
 
+	struct expr *tmpe = 0;
+	struct param_list *tmppl = 0;
+	struct type *tmpt;
+	int paramcount = 0;
+
 	switch(e->kind) {
 		case EXPR_ADD:
 		case EXPR_SUB:
@@ -258,6 +311,7 @@ struct type * expr_typecheck(struct expr *e) {
 				printf(" %s ", expr_print_operator(e));
 				type_print(rhs);
 				printf("\n");
+				typecheck_error++;
 			}
 
 			return type_create(TYPE_INTEGER, 0, 0);
@@ -275,6 +329,7 @@ struct type * expr_typecheck(struct expr *e) {
 				printf(" %s ", expr_print_operator(e));
 				type_print(rhs);
 				printf("\n");
+				typecheck_error++;
 			}
 
 			return type_create(TYPE_BOOLEAN, 0, 0);
@@ -287,6 +342,7 @@ struct type * expr_typecheck(struct expr *e) {
 				printf("type error: can not perform ");
 				type_print(rhs);
 				printf("%s, need to be an integer.\n", expr_print_operator(e));
+				typecheck_error++;
 			}
 			return type_create(TYPE_INTEGER, 0, 0);
 
@@ -303,8 +359,30 @@ struct type * expr_typecheck(struct expr *e) {
 			return type_create(TYPE_STRING, 0, 0);
 
 		case EXPR_CALL:
-			//TODO: evaluate e->expr_list (params)
-			expr_typecheck(e->expr_list);
+			tmpe = e->expr_list;
+			tmppl = e->symbol->type->params;
+			while(tmpe != 0 && tmppl != 0) {
+				lhs = expr_typecheck(tmpe);
+
+				if (!type_compare(lhs, tmppl->type)) {
+					printf("type error: %s requires ", e->left->name);
+					type_print(tmppl->type);
+					printf(" as %dth param, but get ", paramcount + 1);
+					type_print(lhs);
+					printf("\n");
+					typecheck_error++;
+				}
+
+				tmpe = tmpe->next;
+				tmppl = tmppl->next;
+				paramcount++;
+			}
+
+			if ((void *)tmpe != (void *)tmppl) {
+				printf("type error: params of %s does not match its prototype\n", e->left->name);
+				typecheck_error++;
+			}
+
 			return e->symbol->type;
 
 		case EXPR_NOT:
@@ -315,25 +393,27 @@ struct type * expr_typecheck(struct expr *e) {
 				printf(" %s ", expr_print_operator(e));
 				type_print(rhs);
 				printf("\n");
+				typecheck_error++;
 			}
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
-		case EXPR_EQ:
+		case EXPR_EQ: // anything but function and array
 		case EXPR_NEQ:
 
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
-			if (!(type_compare(lhs, rhs) && (lhs->kind == TYPE_BOOLEAN || lhs->kind == TYPE_INTEGER))) {
+			if (!type_compare(lhs, rhs) || lhs->kind == TYPE_FUNCTION || rhs->kind == TYPE_FUNCTION || lhs->kind == TYPE_ARRAY || rhs->kind == TYPE_ARRAY) {
 				printf("type error: can not perform ");
 				type_print(lhs);
 				printf(" %s ", expr_print_operator(e));
 				type_print(rhs);
 				printf("\n");
+				typecheck_error++;
 			}
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
 
-		case EXPR_AND:
+		case EXPR_AND: // only on boolean
 		case EXPR_OR:
 
 			lhs = expr_typecheck(e->left);
@@ -343,17 +423,19 @@ struct type * expr_typecheck(struct expr *e) {
 				printf("type error: can not do binary operation %s on non-boolean type ", expr_print_operator(e));
 				type_print(lhs);
 				printf("\n");
+				typecheck_error++;
 			}
 
 			if (rhs->kind != TYPE_BOOLEAN) {
 				printf("type error: can not do binary operation %s on non-boolean type ", expr_print_operator(e));
 				type_print(lhs);
 				printf("\n");
+				typecheck_error++;
 			}
 
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
-		case EXPR_ASSIGN:
+		case EXPR_ASSIGN: // anything but function
 
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
@@ -364,16 +446,36 @@ struct type * expr_typecheck(struct expr *e) {
 				printf(" to ");
 				type_print(lhs);
 				printf("\n");
+				typecheck_error++;
 			}
 
 			return lhs;
 
 		case EXPR_PARENT:
-			if (e->right) return e->right->symbol->type;
+			if (e->right) return expr_typecheck(e->right);
 			return type_create(TYPE_VOID, 0, 0);
 
 		case EXPR_CURLY:
-			// TODO: create a TYPE_ARRAY with subarries
+			tmpe = e->right;
+			tmpt = 0;
+			while(tmpe != 0) {
+
+
+				if (tmpt == 0) {
+					tmpt = expr_typecheck(tmpe);
+				} else {
+					if (!type_compare(tmpt, expr_typecheck(tmpe))) {
+						printf("type error : type inconsistent in array elements\n");
+						tmpt = expr_typecheck(tmpe);
+						typecheck_error++;
+					}
+				}
+
+				tmpe = tmpe->next;
+
+			}
+
+			return type_create(TYPE_ARRAY, 0, tmpt);
 
 		case EXPR_SUBSCRIPT:
 			rhs = expr_typecheck(e->right);
@@ -381,6 +483,7 @@ struct type * expr_typecheck(struct expr *e) {
 				printf("type error: subscript should be integer but actual is ");
 				type_print(rhs);
 				printf("\n");
+				typecheck_error++;
 			}
 
 			return type_create(TYPE_INTEGER, 0, 0);
@@ -406,6 +509,7 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 				printf("type error: if condition is ");
 				type_print(t);
 				printf(" not boolean\n");
+				typecheck_error++;
 			}
 			stmt_typecheck(s->body, rtn_type, func_name);
 			stmt_typecheck(s->else_body, rtn_type, func_name);
@@ -416,6 +520,7 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 				printf("type error: condition of for-loop is ");
 				type_print(expr_typecheck(s->expr));
 				printf(" not boolean\n");
+				typecheck_error++;
 			}
 			expr_typecheck(s->next_expr);
 			break;
@@ -431,6 +536,7 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 				printf(", should return ");
 				type_print(rtn_type);
 				printf("\n");
+				typecheck_error++;
 			}
 			
 		case STMT_BLOCK: 
@@ -451,6 +557,33 @@ int expr_constant(struct expr *e) {
 	}
 }
 
+// only be called during declaration
+// check parameter declarations of functions and the param of array
+void param_list_typecheck(struct param_list *pl, int isGlobal, int isParam) {
+	if (!pl) return;
+
+	struct type *type_exp = expr_typecheck(pl->expr);
+	if (pl->type == 0) pl->type = type_create(TYPE_INTEGER, 0, 0);
+	if (!isParam) { // this is not part of paramlist of a function
+		if (!type_compare(pl->type, type_exp)) {
+			printf("type error: requires param with type ");
+			type_print(pl->type);
+			printf(", actual is ");
+			type_print(type_exp);
+			printf("\n");
+			typecheck_error++;
+		}
+	}
+
+	if (isGlobal && !expr_constant(pl->expr)) {
+		printf("type error: only constant values can be assigned to array's param\n");
+		typecheck_error++;
+	}
+
+	param_list_typecheck(pl->next, isGlobal, isParam);
+	
+}
+
 void decl_typecheck(struct decl *d) {
 	if (!d) return;
 
@@ -458,16 +591,21 @@ void decl_typecheck(struct decl *d) {
 	if (!d->symbol->type) printf("decl has no symbol type\n");
 
 	// how to determine this?
-	if (d->symbol->type->kind == SYMBOL_GLOBAL && !expr_constant(d->value)) {
+	if (d->symbol->kind == SYMBOL_GLOBAL && !expr_constant(d->value)) {
 		printf("type error: only constant values can be assigned to global value %s\n", d->symbol->name);
+		typecheck_error++;
 	}
 
-	if (d->type->kind != TYPE_FUNCTION && !type_compare(d->type, expr_typecheck(d->value))) {
+	param_list_typecheck(d->type->params, d->symbol->kind == SYMBOL_GLOBAL, d->type->kind == TYPE_FUNCTION);
+
+	struct type *t = expr_typecheck(d->value);
+	if (d->type->kind != TYPE_FUNCTION && !type_compare(d->type, t) && t->kind != TYPE_VOID) {
 		printf("type error: can not assign ");
 		type_print(expr_typecheck(d->value));
 		printf(" to newly decleared varialbe %s (", d->symbol->name);
 		type_print(d->type);
 		printf(")\n");
+		typecheck_error++;
 	}
 
 	if (d->code) stmt_typecheck(d->code, d->type->subtype, d->name);

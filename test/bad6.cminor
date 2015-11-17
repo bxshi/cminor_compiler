@@ -1,1 +1,10 @@
-++a;
+main : function integer () = {
+	f : function void (x : integer, y : array [] boolean);
+
+	x : array [10] boolean;
+
+	y : integer;
+
+	f(x,y);
+	return 0;
+}

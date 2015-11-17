@@ -34,3 +34,5 @@ void type_delete(struct type *t);
 struct type * expr_typecheck(struct expr *e);
 void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name);
 void decl_typecheck(struct decl *d);
+
+int typecheck_result();

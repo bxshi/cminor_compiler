@@ -69,6 +69,7 @@ int main(int argc, char **argv) {
 					decl_resolve(yylval.decl);
 					if (!resolve_result()) {
 						decl_typecheck(yylval.decl);
+						if (typecheck_result() != 0) return 1;
 					} else {
 						return 1;
 					}

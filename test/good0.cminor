@@ -1,2 +1,44 @@
-x : integer = {};
-y : array [10] function void () = {x,y,x+y,z};
+// operators
+
+xInt : integer;
+yInt : integer;
+
+xBoolean : boolean;
+yBoolean : boolean;
+
+xChar : char;
+yChar : char;
+
+xStr : string;
+yStr : string;
+
+xIntArray : array [5] integer;
+
+funArr: function void (x : array [10] integer); // correct
+funArr2 : function void (x : array[] integer); // correct
+
+fun : function integer () = {
+	xInt == yInt;
+	yBoolean != yBoolean;
+
+	xInt > yInt;
+	!xBoolean;
+
+	if (xBoolean && yBoolean || xBoolean) {
+		return xInt;
+	}
+
+	xInt++;
+	yInt++;
+}
+
+main : function void (x : integer, y : array [] integer) = {
+
+	// assign
+	xInt = yInt;
+	xBoolean = yBoolean;
+	xIntArray = y;
+
+	main(x, xIntArray);
+
+}
