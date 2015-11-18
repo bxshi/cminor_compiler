@@ -1,0 +1,11 @@
+main : function integer () = {
+	x : integer = 0;
+	y : array [10] boolean;
+	z : array [10] integer;
+
+	for(x = 0; x < 10; x++) 
+		y[x] = (z[x] > z[x + 1]);
+
+	return 0;
+
+}

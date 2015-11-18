@@ -88,7 +88,9 @@ void decl_resolve(struct decl *d) {
 
 	expr_resolve(d->value);
 
-	if (d->type->kind == TYPE_FUNCTION && !d->code) {
+	// if decl is a function and have code 
+	/*
+	if (d->type->kind == TYPE_FUNCTION && d->code) {
 		if (d->type->subtype->kind != TYPE_VOID) {
 			printf("type error: function %s returns void, should return ", d->name);
 			type_print(d->type->subtype);
@@ -96,6 +98,7 @@ void decl_resolve(struct decl *d) {
 			typecheck_error++;
 		}
 	}
+	*/
 	
 
 	if (d->code) {
