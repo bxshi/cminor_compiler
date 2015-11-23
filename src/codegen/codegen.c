@@ -129,6 +129,10 @@ void stmt_codegen(struct stmt *s, FILE *file)
 
   if (!s) return;
 
+	char *if_label;
+	char *else_label;
+	char *end_label;
+
   switch(s->kind) {
   case STMT_DECL:
     decl_codegen(s->decl, file);
@@ -137,6 +141,23 @@ void stmt_codegen(struct stmt *s, FILE *file)
 		expr_codegen(s->expr, file);
     break;
   case STMT_IF_ELSE:
+		expr_codegen(s->expr, file);
+		fprintf(file, "CMP %s, $0\n", register_name(s->expr->reg));
+		register_free(s->expr->reg);
+		s->expr->reg = -1;
+
+		if_label = codegen_label();
+		else_label = codegen_label();
+		end_label = codegen_label();
+
+		fprintf(file, "JE %s\n", if_label);
+		fprintf(file, "%s:\n", else_label);
+		stmt_codegen(s->else_body, file);
+		fprintf(file, "JMP %s\n", end_label);
+		fprintf(file, "%s:\n", if_label);
+		stmt_codegen(s->body, file);
+		fprintf(file, "%s:\n", end_label);
+
     break;
   case STMT_FOR:
     break;
