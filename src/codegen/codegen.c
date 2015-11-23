@@ -64,13 +64,8 @@ void decl_codegen(struct decl *d, FILE *file)
 
   case TYPE_FUNCTION:
     fprintf(file, ".text\n");
-		if (strcmp(d->name, "main") == 0) {
-			if (d->symbol->kind == SYMBOL_GLOBAL) fprintf(file, ".global _%s\n", d->name);
-			fprintf(file, "_%s:\n", d->name);
-		} else {
-			if (d->symbol->kind == SYMBOL_GLOBAL) fprintf(file, ".global %s\n", d->name);
-			fprintf(file, "%s:\n", d->name);
-		}
+		if (d->symbol->kind == SYMBOL_GLOBAL) fprintf(file, ".global %s\n", d->name);
+		fprintf(file, "%s:\n", d->name);
 
     // preamble
     fprintf(file, "PUSHQ %%rbp\n");
