@@ -148,7 +148,7 @@ void stmt_codegen(struct stmt *s, FILE *file)
     break;
   case STMT_IF_ELSE:
 		expr_codegen(s->expr, file);
-		fprintf(file, "CMPQ $0, %s\n", register_name(s->expr->reg));
+		fprintf(file, "CMPQ $1, %s\n", register_name(s->expr->reg));
 		register_free(s->expr->reg);
 		s->expr->reg = -1;
 
