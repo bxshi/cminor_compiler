@@ -301,24 +301,35 @@ void expr_codegen(struct expr *e, FILE *file)
 
   case EXPR_INCR:
     expr_codegen(e->right, file);
-    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move into rax for ++");
+
+    e->reg = register_alloc();
+		fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
+
+    fprintf(file, "INCQ %s %s\n", register_name(e->right->reg), "# increment");
+
+		if (e->right->kind == EXPR_IDENT) { // update value to the variable data
+			fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), symbol_code(e->right->symbol), "# update value of variable");
+		}
+
     register_free(e->right->reg);
 		e->right->reg = -1;
-    e->reg = register_alloc();
 
-    fprintf(file, "INCQ %%rax %s\n", "# increment");
-    fprintf(file, "MOVQ %%rax, %s %s\n", register_name(e->reg), "# move back to expr");
     break;
 
   case EXPR_DECR:
     expr_codegen(e->right, file);
-    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move into rax for --");
+
+    e->reg = register_alloc();
+		fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
+
+    fprintf(file, "DECQ %s %s\n", register_name(e->right->reg), "# increment");
+
+		if (e->right->kind == EXPR_IDENT) { // update value to the variable data
+			fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), symbol_code(e->right->symbol), "# update value of variable");
+		}
+
     register_free(e->right->reg);
 		e->right->reg = -1;
-    e->reg = register_alloc();
-
-    fprintf(file, "DECQ %%rax %s\n", "# decrement");
-    fprintf(file, "MOVQ %%rax, %s %s\n", register_name(e->reg), "# move back to expr");
     break;
 
   case EXPR_NOT:
