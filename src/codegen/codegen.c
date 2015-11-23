@@ -150,10 +150,10 @@ void stmt_codegen(struct stmt *s, FILE *file)
 		else_label = codegen_label();
 		end_label = codegen_label();
 
-		fprintf(file, "JE %s\n", if_label);
+		fprintf(file, "JE %s %s\n", if_label, "# jump to if body");
 		fprintf(file, "%s:\n", else_label);
 		stmt_codegen(s->else_body, file);
-		fprintf(file, "JMP %s\n", end_label);
+		fprintf(file, "JMP %s %s\n", end_label, "# end else body");
 		fprintf(file, "%s:\n", if_label);
 		stmt_codegen(s->body, file);
 		fprintf(file, "%s:\n", end_label);
