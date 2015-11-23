@@ -198,7 +198,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
   switch(e->kind) {
 
-  case EXPR_ADD:
+  case EXPR_ADD: // tested
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
 
@@ -214,7 +214,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		e->right->reg = -1;
 
 		break;
-  case EXPR_SUB:
+  case EXPR_SUB: // tested
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
 
@@ -230,7 +230,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		e->right->reg = -1;
 
 		break;
-  case EXPR_MUL:
+  case EXPR_MUL: // tested
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
 		fprintf(file, "MOV %s, %%rax\n", register_name(e->left->reg));
@@ -242,7 +242,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		e->reg = register_alloc();
 		fprintf(file, "MOVQ %%rax, %s\n", register_name(e->reg));
 		break;
-  case EXPR_DIV:
+  case EXPR_DIV: // tested
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
 		fprintf(file, "MOV %s, %%rax\n", register_name(e->left->reg));
@@ -255,7 +255,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		fprintf(file, "MOVQ %%rax, %s\n", register_name(e->reg));
 		break;
 
-  case EXPR_IDENT:
+  case EXPR_IDENT: // tested
     e->reg = register_alloc();
     fprintf(file, "MOVQ %s, %s\n", symbol_code(e->symbol), register_name(e->reg));
     break;
@@ -348,7 +348,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		e->right->reg = -1;
 
     e->reg = register_alloc();
-    fprintf(file, "MOVQ %%edx, %s %s\n", register_name(e->reg), "# move mod result back to expr");
+    fprintf(file, "MOVQ %%rdx, %s %s\n", register_name(e->reg), "# move mod result back to expr");
     break;
 
   case EXPR_EQ:
