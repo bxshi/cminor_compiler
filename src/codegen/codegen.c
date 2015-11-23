@@ -343,6 +343,8 @@ void expr_codegen(struct expr *e, FILE *file)
     register_free(e->left->reg);
 		e->left->reg = -1;
 
+		fprintf(file, "CDQ");
+
     fprintf(file, "IDIVQ %s %s\n", register_name(e->right->reg), "# divide divisor");
     register_free(e->right->reg);
 		e->right->reg = -1;
