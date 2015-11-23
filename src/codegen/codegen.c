@@ -297,7 +297,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
   case EXPR_INCR:
     expr_codegen(e->right, file);
-    fprintf(file, "MOVQ %s %%rax %s\n", register_name(e->right->reg), "# move into rax for ++");
+    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move into rax for ++");
     register_free(e->right->reg);
 		e->right->reg = -1;
     e->reg = register_alloc();
@@ -308,7 +308,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
   case EXPR_DECR:
     expr_codegen(e->right, file);
-    fprintf(file, "MOVQ %s %%rax %s\n", register_name(e->right->reg), "# move into rax for --");
+    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move into rax for --");
     register_free(e->right->reg);
 		e->right->reg = -1;
     e->reg = register_alloc();
