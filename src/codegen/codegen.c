@@ -221,13 +221,13 @@ void expr_codegen(struct expr *e, FILE *file)
 		fprintf(file, "SUBQ %s, %s\n", register_name(e->right->reg), register_name(e->left->reg));
 
 		register_free(e->right->reg);
-		e->left->reg = -1;
+		e->right->reg = -1;
 
 		e->reg = register_alloc();
 		fprintf(file, "MOVQ %s, %s\n", register_name(e->left->reg), register_name(e->reg));
 
 		register_free(e->left->reg);
-		e->right->reg = -1;
+		e->left->reg = -1;
 
 		break;
   case EXPR_MUL: // tested
