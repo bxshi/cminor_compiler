@@ -381,7 +381,7 @@ void expr_codegen(struct expr *e, FILE *file)
 char *symbol_code(struct symbol *s) {
 	char *name = (char *)malloc(sizeof(*name) * 1025);
 	if (s->kind == SYMBOL_GLOBAL) { // return name
-		sprintf(name, "$%s", s->name);
+		sprintf(name, "%s", s->name);
 		return name;
 	} else { // return offset 
 		sprintf(name, "-%d(%%rbp)", s->which * 8);
