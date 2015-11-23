@@ -6,6 +6,8 @@ int label_counter = 0;
 
 const char* arg_regs[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 
+char func_end[1024];
+
 char* codegen_label()
 {
 	char *lbl = (char *)malloc(sizeof(*lbl) * 128);
@@ -97,8 +99,12 @@ void decl_codegen(struct decl *d, FILE *file)
     fprintf(file, "PUSHQ %%r14\n");
     fprintf(file, "PUSHQ %%r15\n"); // r10 and r11 are stored by caller
 
+		sprintf(func_end, "_%s_POST", d->name);
+		
     // function body
     stmt_codegen(d->code, file);
+
+		fprintf(file, "%s:\n", func_end); // postamble label
 
     // pop callee saved registers
     fprintf(file, "POPQ %%r15\n");
@@ -142,7 +148,7 @@ void stmt_codegen(struct stmt *s, FILE *file)
     break;
   case STMT_IF_ELSE:
 		expr_codegen(s->expr, file);
-		fprintf(file, "CMP %s, $0\n", register_name(s->expr->reg));
+		fprintf(file, "CMPQ %s, $0\n", register_name(s->expr->reg));
 		register_free(s->expr->reg);
 		s->expr->reg = -1;
 
@@ -168,6 +174,7 @@ void stmt_codegen(struct stmt *s, FILE *file)
   case STMT_RETURN:
 		expr_codegen(s->expr, file);
 		fprintf(file, "MOVQ %s, %%rax\n", register_name(s->expr->reg));
+		fprintf(file, "JMP %s %s\n", func_end, "# jump to the end of this function");
 		register_free(s->expr->reg);
 		s->expr->reg = -1;
     break;
