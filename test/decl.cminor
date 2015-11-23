@@ -1,7 +1,0 @@
-y : integer = 5;
-
-main : function integer () = {
-
-	return y;
-
-}

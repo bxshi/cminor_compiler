@@ -2,5 +2,6 @@ x : integer = 0;
 y : integer = 10;
 
 main : function integer() = {
+	x = y;
 	return x;
 }
