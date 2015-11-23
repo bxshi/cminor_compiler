@@ -311,6 +311,11 @@ struct type * expr_typecheck(struct expr *e) {
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
 
+			//TODO: check if functions, try with its return type
+			
+			if (lhs->kind == TYPE_FUNCTION) lhs = lhs->subtype;
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
+			
 			if (lhs->kind != TYPE_INTEGER || rhs->kind != TYPE_INTEGER) {
 				printf("type error: can not perform ");
 				type_print(lhs);
@@ -326,8 +331,12 @@ struct type * expr_typecheck(struct expr *e) {
 		case EXPR_LEQ:
 		case EXPR_GT:
 		case EXPR_GEQ:
+
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
+
+			if (lhs->kind == TYPE_FUNCTION) lhs = lhs->subtype;
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
 
 			if (lhs->kind != TYPE_INTEGER || rhs->kind != TYPE_INTEGER) {
 				printf("type error: can not perform ");
@@ -344,6 +353,9 @@ struct type * expr_typecheck(struct expr *e) {
 		case EXPR_DECR:
 
 			rhs = expr_typecheck(e->right);
+
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
+
 			if (rhs->kind != TYPE_INTEGER) {
 				printf("type error: can not perform ");
 				type_print(rhs);
@@ -393,6 +405,7 @@ struct type * expr_typecheck(struct expr *e) {
 
 		case EXPR_NOT:
 			rhs = expr_typecheck(e->right);
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
 			if (rhs->kind != TYPE_BOOLEAN) {
 				printf("type error: can not perform ");
 				type_print(lhs);
@@ -408,6 +421,9 @@ struct type * expr_typecheck(struct expr *e) {
 
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
+			if (lhs->kind == TYPE_FUNCTION) lhs = lhs->subtype;
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
+
 			if (!type_compare(lhs, rhs) || lhs->kind == TYPE_FUNCTION || rhs->kind == TYPE_FUNCTION || lhs->kind == TYPE_ARRAY || rhs->kind == TYPE_ARRAY) {
 				printf("type error: can not perform ");
 				type_print(lhs);
@@ -424,6 +440,9 @@ struct type * expr_typecheck(struct expr *e) {
 
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
+
+			if (lhs->kind == TYPE_FUNCTION) lhs= lhs->subtype;
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
 
 			if (lhs->kind != TYPE_BOOLEAN) {
 				printf("type error: can not do binary operation %s on non-boolean type ", expr_print_operator(e));
@@ -445,6 +464,8 @@ struct type * expr_typecheck(struct expr *e) {
 
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
+
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
 
 			if (!type_compare(lhs, rhs) || lhs->kind == TYPE_FUNCTION) {
 				printf("type error: can not assign ");
