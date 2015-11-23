@@ -4,7 +4,8 @@
 int registers[16] = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0};
 
 int register_alloc() {
-	for(int i = 0; i < 16; i++) {
+	int i = 0;
+	for(i = 0; i < 16; i++) {
 		if (!registers[i]) {
 			registers[i] = 1;
 			return i;
