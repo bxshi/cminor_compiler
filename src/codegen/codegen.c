@@ -426,7 +426,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
   case EXPR_PARENT:
     expr_codegen(e->right, file);
-    fprintf(file, "MOVQ %s %%rax %s\n", register_name(e->right->reg), "# move to tmp");
+    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move to tmp");
     register_free(e->right->reg);
 		e->right->reg = -1;
 
