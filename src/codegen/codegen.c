@@ -206,11 +206,13 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		register_free(e->left->reg);
 		e->left->reg = -1;
+
+		e->reg = register_alloc();
+		fprintf(file, "MOVQ %s, %s\n", register_name(e->right->reg), register_name(e->reg));
+
 		register_free(e->right->reg);
 		e->right->reg = -1;
 
-		e->reg = register_alloc();
-		fprintf(file, "MOVQ %%rax, %s\n", register_name(e->reg));
 		break;
   case EXPR_SUB:
 		expr_codegen(e->left, file);
@@ -220,11 +222,13 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		register_free(e->left->reg);
 		e->left->reg = -1;
+
+		e->reg = register_alloc();
+		fprintf(file, "MOVQ %s, %s\n", register_name(e->right->reg), register_name(e->reg));
+
 		register_free(e->right->reg);
 		e->right->reg = -1;
-		e->reg = register_alloc();
 
-		fprintf(file, "MOVQ %%rax, %s\n", register_name(e->reg));
 		break;
   case EXPR_MUL:
 		expr_codegen(e->left, file);
