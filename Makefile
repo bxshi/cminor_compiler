@@ -1,10 +1,10 @@
 
-PARSER_PATH = ./src/typechecker
+PARSER_PATH = ./src/codegen
 
 C_FLAGS = -ll -lc
 
-cminor : ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/param_list.o ${PARSER_PATH}/decl.o ${PARSER_PATH}/expr.o ${PARSER_PATH}/stmt.o ${PARSER_PATH}/token.o ${PARSER_PATH}/type.o ${PARSER_PATH}/symbol.o ${PARSER_PATH}/scope.o ${PARSER_PATH}/hash_table.o ${PARSER_PATH}/main.o
-	gcc ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/param_list.o ${PARSER_PATH}/decl.o ${PARSER_PATH}/expr.o ${PARSER_PATH}/stmt.o ${PARSER_PATH}/token.o ${PARSER_PATH}/type.o ${PARSER_PATH}/symbol.o ${PARSER_PATH}/scope.o ${PARSER_PATH}/hash_table.o ${PARSER_PATH}/main.o -o $@ ${C_FLAGS}
+cminor : ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/param_list.o ${PARSER_PATH}/decl.o ${PARSER_PATH}/expr.o ${PARSER_PATH}/stmt.o ${PARSER_PATH}/token.o ${PARSER_PATH}/type.o ${PARSER_PATH}/symbol.o ${PARSER_PATH}/scope.o ${PARSER_PATH}/codegen.o ${PARSER_PATH}/register.o ${PARSER_PATH}/hash_table.o ${PARSER_PATH}/main.o
+	gcc ${PARSER_PATH}/parser.tab.o ${PARSER_PATH}/scanner.o ${PARSER_PATH}/param_list.o ${PARSER_PATH}/decl.o ${PARSER_PATH}/expr.o ${PARSER_PATH}/stmt.o ${PARSER_PATH}/token.o ${PARSER_PATH}/type.o ${PARSER_PATH}/symbol.o ${PARSER_PATH}/scope.o ${PARSER_PATH}/codegen.o ${PARSER_PATH}/register.o ${PARSER_PATH}/hash_table.o ${PARSER_PATH}/main.o -o $@ ${C_FLAGS}
 
 
 ${PARSER_PATH}/%.o: ${PARSER_PATH}/%.c ${PARSER_PATH}/*.h
