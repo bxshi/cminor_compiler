@@ -148,7 +148,7 @@ void stmt_codegen(struct stmt *s, FILE *file)
     break;
   case STMT_IF_ELSE:
 		expr_codegen(s->expr, file);
-		fprintf(file, "CMPQ %s, $0\n", register_name(s->expr->reg));
+		fprintf(file, "CMPQ $0, %s\n", register_name(s->expr->reg));
 		register_free(s->expr->reg);
 		s->expr->reg = -1;
 
@@ -317,6 +317,7 @@ void expr_codegen(struct expr *e, FILE *file)
     expr_codegen(e->left, file);
     expr_codegen(e->right, file);
 
+		
     fprintf(file, "CMPQ %s, %s %s\n", register_name(e->left->reg), register_name(e->right->reg), "# compare equal");
 
     register_free(e->left->reg);
