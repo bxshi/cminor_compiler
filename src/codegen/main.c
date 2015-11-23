@@ -82,7 +82,6 @@ int main(int argc, char **argv) {
 	}
 
 	if (argc >= 2 && strcmp(argv[1], "-codegen") == 0) {
-		printf("here\n");
 		yyin = fopen(argv[2], "r");
 		while(!feof(yyin)) {
 			if (yyparse() == 0) {

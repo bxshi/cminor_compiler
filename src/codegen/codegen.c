@@ -139,6 +139,10 @@ void stmt_codegen(struct stmt *s, FILE *file)
 	char *else_label;
 	char *end_label;
 
+	char *eval_label;
+	char *body_label;
+	char *next_label;
+
   switch(s->kind) {
   case STMT_DECL:
     decl_codegen(s->decl, file);
@@ -166,6 +170,34 @@ void stmt_codegen(struct stmt *s, FILE *file)
 
     break;
   case STMT_FOR:
+		expr_codegen(s->init_expr, file);
+
+		register_free(s->init_expr->reg);
+		s->init_expr->reg = -1;
+
+		eval_label = codegen_label();
+		body_label = codegen_label();
+		next_label = codegen_label();
+		end_label = codegen_label();
+
+		fprintf(file, "%s:\n", eval_label);
+
+		expr_codegen(s->expr, file);
+
+		fprintf(file, "CMPQ $1, %s\n", register_name(s->expr->reg));
+		register_free(s->expr->reg);
+		fprintf(file, "JE %s\n", body_label);
+		fprintf(file, "JMP %s\n", end_label);
+		fprintf(file, "%s:\n", body_label);
+		stmt_codegen(s->body, file);
+		expr_codegen(s->next_expr, file);
+
+		register_free(s->next_expr->reg);
+		s->next_expr->reg = -1;
+
+		fprintf(file, "JMP %s\n", eval_label);
+		fprintf(file, "%s:\n",end_label);
+
     break;
   case STMT_WHILE:
     break;
