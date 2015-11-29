@@ -373,6 +373,7 @@ struct type * expr_typecheck(struct expr *e) {
 
 		// ident and literals
 		case EXPR_IDENT:
+			printf("assign ident %s symbol type to expr\n", e->name);
 			e->type = e->symbol->type;
 			return e->symbol->type;
 		case EXPR_BOOLEAN:
