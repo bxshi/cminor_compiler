@@ -235,17 +235,20 @@ void stmt_codegen(struct stmt *s, FILE *file)
 
 		curr_expr = s->expr;
 
-		if (curr_expr->type->kind == TYPE_VOID) return;
-		if (curr_expr->type->kind == TYPE_ARRAY) return;
-
-		fprintf(file, "MOVQ %s, %s\n", register_name(curr_expr->reg), arg_regs[0]);
-		register_free(curr_expr->reg);
 
 		// resolve each parameters in print statement
 		while(curr_expr) {
-			expr_codegen(curr_expr, file);
 
-			caller_prepostamble(resolve_print_expr_type(curr_expr->type), file);
+			if (curr_expr->type->kind != TYPE_VOID && curr_expr->type->kind != TYPE_ARRAY) {
+				expr_codegen(curr_expr, file); // evaluate expr
+				// print expr
+				fprintf(file, "MOVQ %s, %s\n", register_name(curr_expr->reg), arg_regs[0]);
+				register_free(curr_expr->reg);
+				expr_codegen(curr_expr, file);
+	
+				caller_prepostamble(resolve_print_expr_type(curr_expr->type), file);
+			}
+
 
 			curr_expr = curr_expr->next; // move to next
 		}
