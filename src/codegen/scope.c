@@ -163,6 +163,8 @@ void expr_resolve(struct expr *e) {
 		expr_resolve(e->expr_list);
 	}
 
+
+
 	expr_resolve(e->next);
 
 }
@@ -325,6 +327,8 @@ struct type * expr_typecheck(struct expr *e) {
 				typecheck_error++;
 			}
 
+
+			e->type = type_create(TYPE_INTEGER, 0, 0);
 			return type_create(TYPE_INTEGER, 0, 0);
 
 		case EXPR_LT:
@@ -347,6 +351,7 @@ struct type * expr_typecheck(struct expr *e) {
 				typecheck_error++;
 			}
 
+			e->type = type_create(TYPE_BOOLEAN, 0, 0);
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
 		case EXPR_INCR:
@@ -362,20 +367,26 @@ struct type * expr_typecheck(struct expr *e) {
 				printf("%s, need to be an integer.\n", expr_print_operator(e));
 				typecheck_error++;
 			}
+
+			e->type = type_create(TYPE_INTEGER, 0, 0);
 			return type_create(TYPE_INTEGER, 0, 0);
 
 		// ident and literals
 		case EXPR_IDENT:
+			e->type = e->symbol->type;
 			return e->symbol->type;
 		case EXPR_BOOLEAN:
+			e->type = type_create(TYPE_BOOLEAN, 0, 0);
 			return type_create(TYPE_BOOLEAN, 0, 0);
 		case EXPR_INTEGER:
+			e->type = type_create(TYPE_INTEGER, 0, 0);
 			return type_create(TYPE_INTEGER, 0, 0);
 		case EXPR_CHAR:
+			e->type = type_create(TYPE_CHAR, 0, 0);
 			return type_create(TYPE_CHAR, 0, 0);
 		case EXPR_STRING:
+			e->type = type_create(TYPE_STRING, 0, 0);
 			return type_create(TYPE_STRING, 0, 0);
-
 		case EXPR_CALL:
 			tmpe = e->expr_list;
 			tmppl = e->symbol->type->params;
@@ -401,6 +412,7 @@ struct type * expr_typecheck(struct expr *e) {
 				typecheck_error++;
 			}
 
+			e->type = e->symbol->type;
 			return e->symbol->type;
 
 		case EXPR_NOT:
@@ -414,6 +426,8 @@ struct type * expr_typecheck(struct expr *e) {
 				printf("\n");
 				typecheck_error++;
 			}
+
+			e->type = type_create(TYPE_BOOLEAN, 0, 0);
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
 		case EXPR_EQ: // anything but function and array
@@ -432,6 +446,8 @@ struct type * expr_typecheck(struct expr *e) {
 				printf("\n");
 				typecheck_error++;
 			}
+
+			e->type = type_create(TYPE_BOOLEAN, 0, 0);
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
 
@@ -458,6 +474,8 @@ struct type * expr_typecheck(struct expr *e) {
 				typecheck_error++;
 			}
 
+
+			e->type = type_create(TYPE_BOOLEAN, 0, 0);
 			return type_create(TYPE_BOOLEAN, 0, 0);
 
 		case EXPR_ASSIGN: // anything but function
@@ -476,10 +494,17 @@ struct type * expr_typecheck(struct expr *e) {
 				typecheck_error++;
 			}
 
+
+			e->type = lhs;
+
 			return lhs;
 
 		case EXPR_PARENT:
-			if (e->right) return expr_typecheck(e->right);
+			if (e->right) {
+				e->type = expr_typecheck(e->right);
+				return e->type;
+			}
+			e->type = type_create(TYPE_VOID, 0, 0);
 			return type_create(TYPE_VOID, 0, 0);
 
 		case EXPR_CURLY:
@@ -502,6 +527,7 @@ struct type * expr_typecheck(struct expr *e) {
 
 			}
 
+			e->type = type_create(TYPE_ARRAY, 0, tmpt);
 			return type_create(TYPE_ARRAY, 0, tmpt);
 
 		case EXPR_SUBSCRIPT:
@@ -513,6 +539,7 @@ struct type * expr_typecheck(struct expr *e) {
 				typecheck_error++;
 			}
 
+			e->type = type_create(TYPE_INTEGER, 0, 0);
 			return type_create(TYPE_INTEGER, 0, 0);
 		
 	}

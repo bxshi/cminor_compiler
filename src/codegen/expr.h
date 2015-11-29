@@ -41,6 +41,8 @@ struct expr {
 	struct expr *left;
 	struct expr *right;
 
+	struct type *type;
+
 	/* used by leaf expr types */
 	const char *name;
 	struct symbol *symbol;

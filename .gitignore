@@ -4,6 +4,7 @@ cminor
 parser.output
 parser.tab.c
 parser.tab.h
+scanner.c
 
 
 #SWAP
