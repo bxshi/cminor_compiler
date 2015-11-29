@@ -17,8 +17,8 @@ ${PARSER_PATH}/parser.tab.c parser.tab.h : ${PARSER_PATH}/parser.bison
 	yacc -d -b${PARSER_PATH}/parser -v ${PARSER_PATH}/parser.bison
 
 clean:
-	rm -f ${PARSER_PATH}/parser.tab.* ${PARSER_PATH}/parser.output ${PARSER_PATH}/scanner.c ${PARSER_PATH}/*.o cminor ./test/*.out
+	rm -f ${PARSER_PATH}/parser.tab.* ${PARSER_PATH}/parser.output ${PARSER_PATH}/scanner.c ${PARSER_PATH}/*.o cminor ./test/*.out *.s *.out
 
-test: cminor ./test/* test.sh
-	./test.sh
+test: cminor ./test/* test.py
+	./test.py
 
