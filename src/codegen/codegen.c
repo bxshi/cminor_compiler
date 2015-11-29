@@ -15,6 +15,13 @@ char* codegen_label()
 	return lbl;
 }
 
+char* str_label()
+{
+	char *lbl = (char *)malloc(sizeof(*lbl) * 128);
+	sprintf(lbl, "_STR_LABEL_%d", ++label_counter);
+	return lbl;
+}
+
 void caller_prepostamble(char *func_name, FILE *file) {
 	fprintf(file, "PUSHQ %%r10\n");
 	fprintf(file, "POPQ %%r11\n");
@@ -353,7 +360,12 @@ void expr_codegen(struct expr *e, FILE *file)
     break;
 
   case EXPR_STRING:
-		printf("codegen error: string expr havn't implemented.\n");
+
+		fprintf(file, ".data\n");
+		e->name = str_label();
+		fprintf(file, "%s:\n", e->name);
+		fprintf(file, ".string \"%s\"\n", e->string_literal);
+		break;
 
   case EXPR_CALL:
 		//TODO: call function
