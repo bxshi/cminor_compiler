@@ -15,6 +15,34 @@ char* codegen_label()
 	return lbl;
 }
 
+void caller_prepostamble(char *func_name, FILE *file) {
+	fprintf(file, "PUSHQ %%r10\n");
+	fprintf(file, "POPQ %%r11\n");
+
+	if (strcmp(func_name, "") != 0)
+		fprintf(file, "CALL %s\n", func_name);
+
+	fprintf(file, "POPQ %%r11\n");
+	fprintf(file, "POPQ %%r10\n");
+}
+
+char * resolve_print_expr_type(struct type* t) {
+				switch(t->kind) {
+					case TYPE_BOOLEAN:
+						return "print_boolean";
+					case TYPE_CHAR:
+						return "print_character";
+					case TYPE_STRING:
+						return "print_string";
+					case TYPE_INTEGER:
+						return "print_integer";
+					case TYPE_FUNCTION:
+						return resolve_print_expr_type(t->subtype);
+					default:
+						return "";
+				}
+			}
+
 void decl_codegen(struct decl *d, FILE *file)
 {
   if (!d) return;
@@ -143,6 +171,8 @@ void stmt_codegen(struct stmt *s, FILE *file)
 	char *body_label;
 	char *next_label;
 
+	struct expr *curr_expr;
+
   switch(s->kind) {
   case STMT_DECL:
     decl_codegen(s->decl, file);
@@ -202,6 +232,24 @@ void stmt_codegen(struct stmt *s, FILE *file)
   case STMT_WHILE:
     break;
   case STMT_PRINT:
+
+		curr_expr = s->expr;
+
+		if (curr_expr->symbol->type->kind == TYPE_VOID) return;
+		if (curr_expr->symbol->type->kind == TYPE_ARRAY) return;
+
+		fprintf(file, "MOVQ %s, %s\n", register_name(curr_expr->reg), arg_regs[0]);
+		register_free(curr_expr->reg);
+
+		// resolve each parameters in print statement
+		while(curr_expr) {
+			expr_codegen(curr_expr, file);
+
+			caller_prepostamble(resolve_print_expr_type(curr_expr->symbol->type), file);
+
+			curr_expr = curr_expr->next; // move to next
+		}
+
     break;
   case STMT_RETURN:
 		expr_codegen(s->expr, file);
