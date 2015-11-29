@@ -12,6 +12,7 @@ struct expr * expr_create(expr_t kind, struct expr *left, struct expr *right) {
 	e->symbol = 0;
 	e->next = 0;
 	e->reg = -1;
+	e->type = 0;
 	return e;
 }
 
