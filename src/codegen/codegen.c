@@ -322,7 +322,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		fprintf(file, "PUSHQ %%r10\n");
 		fprintf(file, "PUSHQ %%r11\n");
 
-		fprintf(file, "CALL %s\n", e->name);
+		fprintf(file, "CALL %s\n", e->left->name);
 
 		fprintf(file, "POPQ %%r11\n");
 		fprintf(file, "POPQ %%r10\n");

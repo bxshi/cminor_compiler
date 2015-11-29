@@ -2,6 +2,9 @@
 src/scanner/lex.yy.c
 cminor
 
+#SWAP
+*.swp
+
 ### C template
 # Object files
 *.o
