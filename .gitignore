@@ -1,9 +1,14 @@
 # FLEX generated file
 src/scanner/lex.yy.c
 cminor
+parser.output
+parser.tab.c
+parser.tab.h
+
 
 #SWAP
 *.swp
+.*.swp
 
 ### C template
 # Object files
