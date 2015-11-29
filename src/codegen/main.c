@@ -94,9 +94,7 @@ int main(int argc, char **argv) {
 
 						FILE *fp = fopen(argv[3], "w+");
 
-						printf("start!\n");
 						decl_codegen(yylval.decl, fp);
-						printf("end!\n");
 
 						fclose(fp);
 

@@ -555,6 +555,7 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 			break;
 		case STMT_PRINT: // should all exprs after print has non void return?
 			expr_typecheck(s->expr);
+			break;
 		case STMT_RETURN: // should match function prototype
 			t = expr_typecheck(s->expr);
 			if (!type_compare(t, rtn_type)) {
@@ -565,9 +566,10 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 				printf("\n");
 				typecheck_error++;
 			}
-			
+			break;
 		case STMT_BLOCK: 
 			stmt_typecheck(s->body, rtn_type, func_name);
+			break;
 	}
 	stmt_typecheck(s->next, rtn_type, func_name);
 }
