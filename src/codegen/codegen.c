@@ -136,9 +136,13 @@ void decl_codegen(struct decl *d, FILE *file)
     fprintf(file, "PUSHQ %%r15\n"); // r10 and r11 are stored by caller
 
 		sprintf(func_end, "_%s_POST", d->name);
+
+		//after we save all registers, wipe out old register info
+		register_stepin();
 		
     // function body
     stmt_codegen(d->code, file);
+
 
 		fprintf(file, "%s:\n", func_end); // postamble label
 
@@ -153,6 +157,9 @@ void decl_codegen(struct decl *d, FILE *file)
     fprintf(file, "MOVQ %%rbp, %%rsp\n");
     fprintf(file, "POPQ %%rbp\n");
     fprintf(file, "RET\n");
+		fprintf(file, "# function %s end \n\n", d->name);
+
+		register_stepout(); // restore register info
 
     break;
   case TYPE_ARRAY:
@@ -208,10 +215,11 @@ void stmt_codegen(struct stmt *s, FILE *file)
 
     break;
   case STMT_FOR:
-		expr_codegen(s->init_expr, file); // init expression
-
-		register_free(s->init_expr->reg);
-		s->init_expr->reg = -1;
+		if (s->init_expr) {
+			expr_codegen(s->init_expr, file); // init expression
+			register_free(s->init_expr->reg);
+			s->init_expr->reg = -1;
+		}
 
 		eval_label = codegen_label();
 		body_label = codegen_label();
@@ -229,10 +237,12 @@ void stmt_codegen(struct stmt *s, FILE *file)
 		fprintf(file, "%s:\n", body_label);
 		stmt_codegen(s->body, file);
 		fprintf(file, "\n");
-		expr_codegen(s->next_expr, file);
 
-		register_free(s->next_expr->reg);
-		s->next_expr->reg = -1;
+		if (s->next_expr){
+			expr_codegen(s->next_expr, file);
+			register_free(s->next_expr->reg);
+			s->next_expr->reg = -1;
+		}
 
 		fprintf(file, "JMP %s\n", eval_label);
 		fprintf(file, "%s:\n",end_label);
@@ -366,10 +376,15 @@ void expr_codegen(struct expr *e, FILE *file)
   case EXPR_DIV: // tested
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
+
 		fprintf(file, "MOV %s, %%rax\n", register_name(e->left->reg));
+
 		register_free(e->left->reg);
 		e->left->reg = -1;
-		fprintf(file, "IDIV %s\n", register_name(e->right->reg));
+
+		fprintf(file, "CQO\n");
+
+		fprintf(file, "IDIVQ %s\n", register_name(e->right->reg));
 		register_free(e->right->reg);
 		e->right->reg = -1;
 		e->reg = register_alloc();
@@ -410,7 +425,11 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		while(expr_list && argcount < 6) {
 			expr_codegen(expr_list, file);
-			fprintf(file, "MOVQ %s, %s %s %d\n", register_name(expr_list->reg), arg_regs[argcount++], "#push arg", argcount);
+			if (expr_list->kind == EXPR_STRING) {
+				fprintf(file, "MOVQ %s, %s %s %d\n", expr_list->name, arg_regs[argcount++], "#push arg", argcount);
+			} else {
+				fprintf(file, "MOVQ %s, %s %s %d\n", register_name(expr_list->reg), arg_regs[argcount++], "#push arg", argcount);
+			}
 			register_free(expr_list->reg);
 			expr_list = expr_list->next;
 		}
@@ -517,9 +536,7 @@ void expr_codegen(struct expr *e, FILE *file)
     register_free(e->left->reg);
 		e->left->reg = -1;
 
-		fprintf(file, "CDQ\n");
-
-		fprintf(file, "MOVQ $0, %%rdx #clear up residual part before using it\n");
+		fprintf(file, "CQO\n");
 
     fprintf(file, "IDIVQ %s %s\n", register_name(e->right->reg), "# divide divisor");
     register_free(e->right->reg);

@@ -1,13 +1,43 @@
 #include "register.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int registers[16] = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0};
+int default_registers[16] = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0};
+
+struct register_elem {
+	int registers[16];
+	struct register_elem *prev;
+	struct register_elem *next;
+};
+
+struct register_elem *registers = 0;
+
+void init_registers() {
+	if (!registers) {
+		registers = (struct register_elem*)malloc(sizeof(*registers));
+		memcpy(registers->registers, default_registers, sizeof(int) * 16);
+	}
+}
+
+void register_stepin() {
+	struct register_elem *elem = (struct register_elem*)malloc(sizeof(*elem));
+	memcpy(elem->registers, default_registers, sizeof(int) * 16);
+	registers->next = elem;
+	elem->prev = registers;
+	registers = elem;
+}
+
+void register_stepout() {
+	if (registers->prev)
+		registers = registers->prev;
+}
 
 int register_alloc() {
 	int i = 0;
 	for(i = 0; i < 16; i++) {
-		if (!registers[i]) {
-			registers[i] = 1;
+		if (!registers->registers[i]) {
+			registers->registers[i] = 1;
 			return i;
 		}
 	}
@@ -18,7 +48,7 @@ int register_alloc() {
 // do not free reserved registers
 void register_free(int r) {
 	if (r == 1 || (r >= 10 && r <= 15)) {
-		registers[r] = 0;
+		registers->registers[r] = 0;
 	}
 }
 

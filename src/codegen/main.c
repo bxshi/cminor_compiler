@@ -10,6 +10,7 @@
 #include "type.h"
 #include "scope.h"
 #include "codegen.h"
+#include "register.h"
 
 #define nullptr 0
 
@@ -93,6 +94,8 @@ int main(int argc, char **argv) {
 						if (typecheck_result() != 0) return 1;
 
 						FILE *fp = fopen(argv[3], "w+");
+
+						init_registers();
 
 						decl_codegen(yylval.decl, fp);
 
