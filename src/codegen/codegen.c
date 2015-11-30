@@ -485,9 +485,10 @@ void expr_codegen(struct expr *e, FILE *file)
     break;
 
   case EXPR_EXP:
-    // call integer_power
+    // TODO: call integer_power
     break;
   case EXPR_MOD:
+		// TODO: check mod operation
     expr_codegen(e->left, file);
     expr_codegen(e->right, file);
 

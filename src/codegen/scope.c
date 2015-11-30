@@ -424,6 +424,7 @@ struct type * expr_typecheck(struct expr *e) {
 			while(tmpe != 0 && tmppl != 0) {
 				lhs = expr_typecheck(tmpe);
 
+				if (lhs->kind == TYPE_FUNCTION) lhs = lhs->subtype;
 				if (!type_compare(lhs, tmppl->type)) {
 					printf("type error: %s requires ", e->left->name);
 					type_print(tmppl->type);
@@ -695,6 +696,7 @@ void decl_typecheck(struct decl *d) {
 	param_list_typecheck(d->type->params, d->symbol->kind == SYMBOL_GLOBAL, d->type->kind == TYPE_FUNCTION);
 
 	struct type *t = expr_typecheck(d->value);
+	if (t->kind == TYPE_FUNCTION) t = t->subtype;
 	if (d->type->kind != TYPE_FUNCTION && !type_compare(d->type, t) && t->kind != TYPE_VOID) {
 		printf("type error: can not assign ");
 		type_print(expr_typecheck(d->value));
