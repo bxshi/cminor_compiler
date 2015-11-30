@@ -510,7 +510,6 @@ void expr_codegen(struct expr *e, FILE *file)
 
     break;
   case EXPR_MOD:
-		// TODO: check mod operation
     expr_codegen(e->left, file);
     expr_codegen(e->right, file);
 
@@ -519,6 +518,8 @@ void expr_codegen(struct expr *e, FILE *file)
 		e->left->reg = -1;
 
 		fprintf(file, "CDQ\n");
+
+		fprintf(file, "MOVQ $0, %%rdx #clear up residual part before using it\n");
 
     fprintf(file, "IDIVQ %s %s\n", register_name(e->right->reg), "# divide divisor");
     register_free(e->right->reg);
@@ -629,6 +630,7 @@ void expr_codegen(struct expr *e, FILE *file)
 }
 
 char *symbol_code(struct symbol *s) {
+	//TODO: do not return by symbol untill the result has never been returned
 	char *name = (char *)malloc(sizeof(*name) * 1025);
 	if (s->kind == SYMBOL_GLOBAL) { // return name
 		sprintf(name, "%s", s->name);
