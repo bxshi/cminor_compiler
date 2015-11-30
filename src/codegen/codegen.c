@@ -101,6 +101,7 @@ void decl_codegen(struct decl *d, FILE *file)
     break;
 
   case TYPE_FUNCTION:
+		if (!d->code) break; // if declaration just skip it
     fprintf(file, ".text\n");
 		if (d->symbol->kind == SYMBOL_GLOBAL) fprintf(file, ".global %s\n", d->name);
 		fprintf(file, "%s:\n", d->name);
@@ -195,6 +196,8 @@ void stmt_codegen(struct stmt *s, FILE *file)
     break;
   case STMT_EXPR:
 		expr_codegen(s->expr, file);
+		register_free(s->expr->reg);
+		s->expr->reg = -1;
     break;
   case STMT_IF_ELSE:
 		expr_codegen(s->expr, file);
@@ -229,15 +232,23 @@ void stmt_codegen(struct stmt *s, FILE *file)
 
 		fprintf(file, "%s:\n", eval_label);
 
-		expr_codegen(s->expr, file);
+		if (s->expr) {
+			expr_codegen(s->expr, file);
+			fprintf(file, "CMPQ $1, %s\n", register_name(s->expr->reg));
+			register_free(s->expr->reg);
+			s->expr->reg = -1;
+			fprintf(file, "JE %s\n", body_label);
+			fprintf(file, "JMP %s\n", end_label);
+			fprintf(file, "%s:\n", body_label);
+			stmt_codegen(s->body, file);
+			fprintf(file, "\n");
+		} else {
+			fprintf(file, "JMP %s #infinite loop\n", body_label);
+			fprintf(file, "%s:\n", body_label);
+			stmt_codegen(s->body, file);
+			fprintf(file, "\n");
+		}
 
-		fprintf(file, "CMPQ $1, %s\n", register_name(s->expr->reg));
-		register_free(s->expr->reg);
-		fprintf(file, "JE %s\n", body_label);
-		fprintf(file, "JMP %s\n", end_label);
-		fprintf(file, "%s:\n", body_label);
-		stmt_codegen(s->body, file);
-		fprintf(file, "\n");
 
 		if (s->next_expr){
 			expr_codegen(s->next_expr, file);

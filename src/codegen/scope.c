@@ -632,7 +632,7 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 			break;
 		case STMT_FOR:
 			expr_typecheck(s->init_expr);
-			if (expr_typecheck(s->expr)->kind != TYPE_BOOLEAN) {
+			if (expr_typecheck(s->expr)->kind != TYPE_BOOLEAN && expr_typecheck(s->expr)->kind != TYPE_VOID) {
 				printf("type error: condition of for-loop is ");
 				type_print(expr_typecheck(s->expr));
 				printf(" not boolean\n");
