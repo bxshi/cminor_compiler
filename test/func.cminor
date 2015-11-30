@@ -2,7 +2,7 @@ fib : function integer(x : integer, y : integer, z : integer) = {
 
 	m : integer = 6;
 
-	return m - x - y -z;
+	return m - x - y; /// = 7
 
 }
 
@@ -13,5 +13,5 @@ main : function integer() = {
 	i = 1;
 
 
-	return fib(i, 2, 3);
+	return fib(i, -2, 3);
 }

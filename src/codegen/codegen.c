@@ -291,9 +291,8 @@ void expr_codegen(struct expr *e, FILE *file)
   char *next_label;
   char *branch_label;
 	struct expr *expr_list;
-	int argcount;
+	int argcount = 0;
 
-	char *set_to_true;
 	char *set_to_false;
 
   switch(e->kind) {
@@ -318,17 +317,29 @@ void expr_codegen(struct expr *e, FILE *file)
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
 
-		fprintf(file, "SUBQ %s, %s\n", register_name(e->right->reg), register_name(e->left->reg));
+		if (e->left) {
+	
+			fprintf(file, "SUBQ %s, %s\n", register_name(e->right->reg), register_name(e->left->reg));
+	
+			register_free(e->right->reg);
+			e->right->reg = -1;
+	
+			e->reg = register_alloc();
+	
+			fprintf(file, "MOVQ %s, %s\n", register_name(e->left->reg), register_name(e->reg));
+	
+			register_free(e->left->reg);
+			e->left->reg = -1;
+		} else {
+			e->reg = register_alloc();
 
-		register_free(e->right->reg);
-		e->right->reg = -1;
+			fprintf(file, "MOVQ %s, %s\n", register_name(e->right->reg), register_name(e->reg));
 
-		e->reg = register_alloc();
+			register_free(e->right->reg);
+			e->right->reg = -1;
 
-		fprintf(file, "MOVQ %s, %s\n", register_name(e->left->reg), register_name(e->reg));
-
-		register_free(e->left->reg);
-		e->left->reg = -1;
+			fprintf(file, "NEG %s %s\n", register_name(e->reg), "# change sign");
+		}
 
 		break;
   case EXPR_MUL: // tested
@@ -390,7 +401,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		while(expr_list && argcount < 6) {
 			expr_codegen(expr_list, file);
-			fprintf(file, "MOVQ %s, %s %s%d\n", register_name(expr_list->reg), arg_regs[argcount++], "#push arg", argcount);
+			fprintf(file, "MOVQ %s, %s %s %d\n", register_name(expr_list->reg), arg_regs[argcount++], "#push arg", argcount);
 			register_free(expr_list->reg);
 			expr_list = expr_list->next;
 		}

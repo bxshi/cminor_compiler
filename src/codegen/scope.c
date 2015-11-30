@@ -313,6 +313,31 @@ struct type * expr_typecheck(struct expr *e) {
 	switch(e->kind) {
 		case EXPR_ADD:
 		case EXPR_SUB:
+
+			lhs = expr_typecheck(e->left);
+			rhs = expr_typecheck(e->right);
+
+			if (lhs->kind == TYPE_FUNCTION) lhs = lhs->subtype;
+			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
+
+			if (rhs->kind != TYPE_INTEGER) {
+				printf("type error: can not perform %s with ", expr_print_operator(e));
+				type_print(rhs);
+				printf("\n");
+				typecheck_error++;
+			} else if (lhs->kind != TYPE_INTEGER && lhs->kind != TYPE_VOID) {
+				printf("type error: can not perform ");
+				type_print(lhs);
+				printf(" %s ", expr_print_operator(e));
+				type_print(rhs);
+				printf("\n");
+				typecheck_error++;
+			}
+
+			e->type = type_create(TYPE_INTEGER, 0, 0);
+			return e->type;
+
+			break;
 		case EXPR_MUL:
 		case EXPR_DIV:
 		case EXPR_MOD:
@@ -320,8 +345,6 @@ struct type * expr_typecheck(struct expr *e) {
 			lhs = expr_typecheck(e->left);
 			rhs = expr_typecheck(e->right);
 
-			//TODO: check if functions, try with its return type
-			
 			if (lhs->kind == TYPE_FUNCTION) lhs = lhs->subtype;
 			if (rhs->kind == TYPE_FUNCTION) rhs = rhs->subtype;
 			
@@ -551,8 +574,8 @@ struct type * expr_typecheck(struct expr *e) {
 
 			e->type = type_create(TYPE_INTEGER, 0, 0);
 			return e->type;
-		
 	}
+	return type_create(TYPE_VOID, 0, 0);
 }
 
 void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name) {
