@@ -1,6 +1,0 @@
-x : array [10] integer = {};
-main : function integer () = {
-	x = {1,2,3};
-
-	return x[1];
-}

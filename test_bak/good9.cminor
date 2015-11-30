@@ -1,7 +1,0 @@
-main : function integer();
-y : array [1] integer;
-fun : function void (x : array [] integer) = {
-	fun(y);
-}
-
-vvv : function void () ={}

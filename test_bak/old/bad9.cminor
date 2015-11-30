@@ -1,3 +1,0 @@
-main : function function void (a : integer) (b : boolean) = {
-for(i : integer = 0; i < 10; i++) print i; 
-}

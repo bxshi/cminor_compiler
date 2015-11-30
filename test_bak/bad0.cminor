@@ -1,2 +1,0 @@
-yIntArray : array [xInt] integer; // error
-zIntArray : array [] integer; // error

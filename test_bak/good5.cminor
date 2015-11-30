@@ -1,7 +1,0 @@
-main : function integer() = {
-	x : boolean = true;
-
-	x = 1 > 5 && 9 < 3;
-
-	return 0;
-}
