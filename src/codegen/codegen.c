@@ -58,6 +58,8 @@ void decl_codegen(struct decl *d, FILE *file)
   struct param_list *pl;
   int pl_count = 0;
 
+	//TODO: do not generate code for function declarations
+
   // global variables
   switch(d->type->kind) {
   case TYPE_BOOLEAN:
@@ -459,6 +461,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		break;
 
+	//TODO: store result in e->reg
   case EXPR_INCR:
     expr_codegen(e->right, file);
 
@@ -476,6 +479,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
     break;
 
+	//TODO: store result in e->reg
   case EXPR_DECR:
     expr_codegen(e->right, file);
 
@@ -659,7 +663,6 @@ void expr_codegen(struct expr *e, FILE *file)
 }
 
 char *symbol_code(struct symbol *s) {
-	//TODO: do not return by symbol untill the result has never been returned
 	char *name = (char *)malloc(sizeof(*name) * 1025);
 	if (s->kind == SYMBOL_GLOBAL) { // return name
 		sprintf(name, "%s", s->name);
