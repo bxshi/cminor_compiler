@@ -5,6 +5,9 @@ parser.output
 parser.tab.c
 parser.tab.h
 scanner.c
+*.s
+*.o
+*.out
 
 
 #SWAP

@@ -56,8 +56,12 @@ void scope_exit() {
 
 void scope_bind(const char *name, struct symbol *s) {
 	hash_table_insert(curr->h, name, s);
-	if (curr->type_handler)
+	if (curr->type_handler) {
+		printf("bind %s, add local variable count to %d\n", name, curr->type_handler->local_variables + 1);
 		curr->type_handler->local_variables += 1;
+	} else {
+		printf("bind %s, with no local scope\n", name);
+	}
 }
 
 struct symbol *scope_lookup(const char *name) {
@@ -107,6 +111,7 @@ void decl_resolve(struct decl *d) {
 
 	if (d->code) {
 		scope_enter();
+		curr->type_handler = d->type;
 		param_list_resolve(d->type->params, 0);
 		int old_rtn = returned;
 		returned = 0;
@@ -220,6 +225,7 @@ void stmt_resolve(struct stmt *s) {
 
 void param_list_resolve(struct param_list *p, int idx) {
 	if (!p) return;
+	printf("param_list resolve %s\n", p->name);
 	if (p->type == 0) { // array
 		expr_resolve(p->expr);
 		p->symbol = symbol_create_param(idx, type_create(TYPE_INTEGER, 0, 0), 0);
@@ -233,6 +239,7 @@ void param_list_resolve(struct param_list *p, int idx) {
 			expr_resolve(p->expr);
 			p->symbol = sym;
 			scope_bind(p->name, sym);
+			printf("%s defined\n", p->name);
 		}
 	}
 	param_list_resolve(p->next, idx + 1);
@@ -373,7 +380,7 @@ struct type * expr_typecheck(struct expr *e) {
 
 		// ident and literals
 		case EXPR_IDENT:
-			printf("assign ident %s symbol type to expr\n", e->name);
+			printf("assign ident %s symbol type %p to expr\n", e->name, e->symbol->type);
 			e->type = e->symbol->type;
 			return e->type;
 		case EXPR_BOOLEAN:
@@ -451,7 +458,7 @@ struct type * expr_typecheck(struct expr *e) {
 			}
 
 			e->type = type_create(TYPE_BOOLEAN, 0, 0);
-			return e-type;
+			return e->type;
 
 
 		case EXPR_AND: // only on boolean
@@ -546,13 +553,12 @@ struct type * expr_typecheck(struct expr *e) {
 			return e->type;
 		
 	}
-
-	expr_typecheck(e->next);
 }
 
 void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name) {
 	if (!s) return;
 	struct type *t;
+	struct expr *curr_expr;
 	switch(s->kind) {
 		case STMT_DECL:
 			decl_typecheck(s->decl);
@@ -579,15 +585,23 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 				printf(" not boolean\n");
 				typecheck_error++;
 			}
+			stmt_typecheck(s->body, rtn_type, func_name); // check body
 			expr_typecheck(s->next_expr);
 			break;
 		case STMT_WHILE:
 			break;
 		case STMT_PRINT: // should all exprs after print has non void return?
-			expr_typecheck(s->expr);
+			printf("typecheck stmt_print\n");
+			curr_expr = s->expr;
+			while(curr_expr) {
+				printf("stmt print expr, kind %d \n", curr_expr->kind);
+				expr_typecheck(curr_expr);
+				curr_expr = curr_expr->next;
+			}
 			break;
 		case STMT_RETURN: // should match function prototype
 			t = expr_typecheck(s->expr);
+			if (t->kind == TYPE_FUNCTION) t = t->subtype;
 			if (!type_compare(t, rtn_type)) {
 				printf("type error: function %s returns ", func_name);
 				type_print(t);

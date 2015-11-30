@@ -117,7 +117,7 @@ param_list : /* empty */ {$$ = nullptr;}
 					 | nonempty_param_list {$$ = $1;}
 					 ;
 
-nonempty_param_list : nonempty_param_list TOKEN_COMMA param {$1->next = $3; $$ = $1; }
+nonempty_param_list : nonempty_param_list TOKEN_COMMA param {struct param_list *pl = $1; while(pl->next) {pl = pl->next;} pl->next = $3; $$ = $1; }
 										| param {$$ = $1; }
 										;
 
@@ -180,7 +180,7 @@ integer_literal : TOKEN_INTEGER_LITERAL { $$ = expr_create_integer_literal($1);}
 string_literal : TOKEN_STRING_LITERAL { $$ = expr_create_string_literal(str_create($1)); }
 							 ;
 
-char_literal : TOKEN_CHAR_LITERAL { $$ = expr_create_character_literal(str_create(yytext)[1]);}
+char_literal : TOKEN_CHAR_LITERAL { $$ = expr_create_character_literal(str_create(yytext));}
 
 primary_expr : ident { $$ = expr_create_name($1); }
 						 | integer_literal { $$ = $1; }

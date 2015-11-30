@@ -1,0 +1,7 @@
+x : integer = 14;
+
+main : function integer() = {
+	y : integer = 98;
+	y = x;
+	return y;
+}

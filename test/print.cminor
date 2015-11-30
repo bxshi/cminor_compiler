@@ -1,0 +1,6 @@
+main : function integer () = {
+	print "hello, world\n";
+	print 42, '\n';
+	print true, "\n";
+	return 0;
+}

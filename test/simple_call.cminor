@@ -1,0 +1,9 @@
+func : function integer (x : integer) = {
+	return x + 1;
+}
+
+main : function void() = {
+	i : integer = 1;
+
+	func(i);
+}

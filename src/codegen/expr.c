@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct expr * expr_create(expr_t kind, struct expr *left, struct expr *right) {
 	struct expr *e = (struct expr*)malloc(sizeof(*e));
@@ -50,9 +51,28 @@ struct expr * expr_create_integer_literal(int c) {
 	return e;
 }
 
-struct expr * expr_create_character_literal(int c) {
+struct expr * expr_create_character_literal(char *c) {
 	struct expr *e = expr_create(EXPR_CHAR, nullptr, nullptr);
-	e->literal_value = c;
+
+	if (strlen(c) > 3) {
+		switch(c[2]) {
+			case 'a': e->literal_value = '\a'; break;
+			case 'b': e->literal_value = '\b'; break;
+			case 'f': e->literal_value = '\f'; break;
+			case 'n': e->literal_value = '\n'; break;
+			case 'r': e->literal_value = '\r'; break;
+			case 't': e->literal_value = '\t'; break;
+			case 'v': e->literal_value = '\v'; break;
+			case '\\': e->literal_value = '\\'; break;
+			case '\'': e->literal_value = '\''; break;
+			case '\"': e->literal_value = '\"'; break;
+			case '?': e->literal_value = '\?'; break;
+			default: e->literal_value = c[2]; break;
+		}
+	} else {
+		e->literal_value = c[1];
+	}
+
 	return e;
 }
 

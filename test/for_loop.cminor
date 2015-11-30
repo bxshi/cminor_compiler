@@ -1,0 +1,12 @@
+main : function integer () = {
+
+	i : integer = 0;
+
+	print "init i = ",i, "\n";
+
+	for(i = 0; i < 10; i++) {
+		print i, "\n";
+	}
+
+	return i;
+}

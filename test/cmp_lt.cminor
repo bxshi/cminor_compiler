@@ -1,0 +1,8 @@
+x : integer = 1;
+y : integer = 10;
+z : integer = 0; // deal with negative value
+
+main : function integer() = {
+	if (x < y) return 0;
+	return 1;
+}

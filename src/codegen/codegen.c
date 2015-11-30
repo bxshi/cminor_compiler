@@ -24,7 +24,7 @@ char* str_label()
 
 void caller_prepostamble(char *func_name, FILE *file) {
 	fprintf(file, "PUSHQ %%r10\n");
-	fprintf(file, "POPQ %%r11\n");
+	fprintf(file, "PUSHQ %%r11\n");
 
 	if (strcmp(func_name, "") != 0)
 		fprintf(file, "CALL %s\n", func_name);
@@ -125,6 +125,7 @@ void decl_codegen(struct decl *d, FILE *file)
     if (pl_count == 6) fprintf(file, "PUSHQ %%r9\n");
 
     // allocate local variables
+		fprintf(file, "# function %s has %d local variables\n", d->name, d->type->local_variables);
     fprintf(file, "SUBQ $%d, %%rsp %s\n", d->type->local_variables * 8, "# allocate local variables");
 
     // save callee saved registers
@@ -207,7 +208,7 @@ void stmt_codegen(struct stmt *s, FILE *file)
 
     break;
   case STMT_FOR:
-		expr_codegen(s->init_expr, file);
+		expr_codegen(s->init_expr, file); // init expression
 
 		register_free(s->init_expr->reg);
 		s->init_expr->reg = -1;
@@ -227,6 +228,7 @@ void stmt_codegen(struct stmt *s, FILE *file)
 		fprintf(file, "JMP %s\n", end_label);
 		fprintf(file, "%s:\n", body_label);
 		stmt_codegen(s->body, file);
+		fprintf(file, "\n");
 		expr_codegen(s->next_expr, file);
 
 		register_free(s->next_expr->reg);
@@ -247,11 +249,16 @@ void stmt_codegen(struct stmt *s, FILE *file)
 		while(curr_expr) {
 
 			if (curr_expr->type->kind != TYPE_VOID && curr_expr->type->kind != TYPE_ARRAY) {
+				fprintf(file, "#before expr eval\n");
 				expr_codegen(curr_expr, file); // evaluate expr
+				fprintf(file, "#after expr eval\n");
 				// print expr
-				fprintf(file, "MOVQ %s, %s\n", register_name(curr_expr->reg), arg_regs[0]);
+				if (curr_expr->type->kind == TYPE_STRING){
+					fprintf(file, "MOVQ $%s, %s\n", curr_expr->name, arg_regs[0]);
+				} else {
+					fprintf(file, "MOVQ %s, %s\n", register_name(curr_expr->reg), arg_regs[0]);
+				}
 				register_free(curr_expr->reg);
-				expr_codegen(curr_expr, file);
 	
 				caller_prepostamble(resolve_print_expr_type(curr_expr->type), file);
 			}
@@ -285,6 +292,9 @@ void expr_codegen(struct expr *e, FILE *file)
   char *branch_label;
 	struct expr *expr_list;
 	int argcount;
+
+	char *set_to_true;
+	char *set_to_false;
 
   switch(e->kind) {
 
@@ -352,19 +362,22 @@ void expr_codegen(struct expr *e, FILE *file)
     break;
 
   // boolean/integer/char are stored in literal_value
+  case EXPR_CHAR:
   case EXPR_BOOLEAN:
   case EXPR_INTEGER:
-  case EXPR_CHAR:
     e->reg = register_alloc();
     fprintf(file, "MOVQ $%d, %s %s\n", e->literal_value, register_name(e->reg), "# declear instant char/boolean/integer");
     break;
 
   case EXPR_STRING:
 
-		fprintf(file, ".data\n");
-		e->name = str_label();
-		fprintf(file, "%s:\n", e->name);
-		fprintf(file, ".string \"%s\"\n", e->string_literal);
+		if (e->name == 0){
+			fprintf(file, ".data\n");
+			e->name = str_label();
+			fprintf(file, "%s:\n", e->name);
+			fprintf(file, ".string %s\n", e->string_literal);
+			fprintf(file, ".text\n");
+		}
 		break;
 
   case EXPR_CALL:
@@ -375,9 +388,9 @@ void expr_codegen(struct expr *e, FILE *file)
 		expr_list = e->expr_list;
 		argcount = 0;
 
-		while(!expr_list && argcount < 6) {
+		while(expr_list && argcount < 6) {
 			expr_codegen(expr_list, file);
-			fprintf(file, "MOVQ %s, %s\n", register_name(expr_list->reg), arg_regs[argcount++]);
+			fprintf(file, "MOVQ %s, %s %s%d\n", register_name(expr_list->reg), arg_regs[argcount++], "#push arg", argcount);
 			register_free(expr_list->reg);
 			expr_list = expr_list->next;
 		}
@@ -430,12 +443,24 @@ void expr_codegen(struct expr *e, FILE *file)
 
   case EXPR_NOT:
     expr_codegen(e->right,file);
-    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move for not op");
+    fprintf(file, "MOVQ %s, %%rax %s\n", register_name(e->right->reg), "# move for logical not operation");
     register_free(e->right->reg);
 		e->right->reg = -1;
     e->reg = register_alloc();
 
-    fprintf(file, "NOT %%rax %s\n", "# logical not");
+		set_to_false = codegen_label();
+		next_label = codegen_label();
+
+    fprintf(file, "CMPQ $1, %%rax %s\n", "# compare if is true");
+		fprintf(file, "JE %s\n", set_to_false);
+
+		fprintf(file, "MOVQ $1, %%rax\n");
+		fprintf(file, "JMP %s\n", next_label);
+
+		fprintf(file, "%s:\n", set_to_false);
+		fprintf(file, "MOVQ $0, %%rax\n");
+
+		fprintf(file, "%s:\n", next_label);
     fprintf(file, "MOVQ %%rax, %s %s\n", register_name(e->reg), "# move back to expr");
     break;
 
@@ -471,7 +496,7 @@ void expr_codegen(struct expr *e, FILE *file)
     expr_codegen(e->right, file);
 
 		
-    fprintf(file, "CMPQ %s, %s %s\n", register_name(e->left->reg), register_name(e->right->reg), "# compare equal");
+    fprintf(file, "CMPQ %s, %s %s\n", register_name(e->right->reg), register_name(e->left->reg), "# compare equal");
 
     register_free(e->left->reg);
 		e->left->reg = -1;
@@ -566,7 +591,7 @@ char *symbol_code(struct symbol *s) {
 		sprintf(name, "%s", s->name);
 		return name;
 	} else { // return offset 
-		sprintf(name, "-%d(%%rbp)", s->which * 8);
+		sprintf(name, "-%d(%%rbp)", (s->which + (s->kind == SYMBOL_LOCAL ? 0 : 1)) * 8);
 		return name;
 	}
 }

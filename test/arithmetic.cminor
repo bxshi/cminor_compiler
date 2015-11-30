@@ -1,0 +1,12 @@
+x : integer = 1;
+y : integer = 9;
+
+main : function integer () = {
+	x++;
+	x--;
+
+	x = x % 1000;
+	y--;
+
+	return 90 - 100;
+}

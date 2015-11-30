@@ -1,0 +1,32 @@
+main : function integer() = {
+
+	if (1 > 10) {
+		print "error : 1 > 10\n";
+	} else {
+		if (1 <= 10) print "1 <= 10\n";
+	}
+
+	if (11 < 10) {
+		print "error : 11 < 10\n";
+	} else {
+		if (11 > 10) print "11 > 10\n";
+	}
+
+	if (11 == 12) {
+		print "error : 11 == 12\n";
+	}
+
+	if (11 != 12) print "11 != 12\n";
+
+	if (!true) {
+		print "false is true\n";
+	}
+
+	print !false, "\n";
+
+	print !false == true, "\n";
+
+	if (!false == true) print "!false is true\n";
+
+	return 0;
+}

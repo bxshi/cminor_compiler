@@ -65,7 +65,7 @@ struct expr * expr_create_function_call(const char *ident, struct expr *expr_lis
 struct expr * expr_create_name( const char *n );
 struct expr * expr_create_boolean_literal( int c );
 struct expr * expr_create_integer_literal( int c );
-struct expr * expr_create_character_literal( int c );
+struct expr * expr_create_character_literal( char *c );
 struct expr * expr_create_string_literal( const char *str );
 struct expr * expr_create_parent(struct expr * subexpr);
 struct expr * expr_create_curly(struct expr * subexpr);
