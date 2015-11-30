@@ -431,8 +431,8 @@ void expr_codegen(struct expr *e, FILE *file)
   case EXPR_INCR:
     expr_codegen(e->right, file);
 
-    e->reg = register_alloc();
-		fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
+    //e->reg = register_alloc();
+		//fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
 
     fprintf(file, "INCQ %s %s\n", register_name(e->right->reg), "# increment");
 
@@ -448,8 +448,8 @@ void expr_codegen(struct expr *e, FILE *file)
   case EXPR_DECR:
     expr_codegen(e->right, file);
 
-    e->reg = register_alloc();
-		fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
+    //e->reg = register_alloc();
+		//fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before --");
 
     fprintf(file, "DECQ %s %s\n", register_name(e->right->reg), "# increment");
 
