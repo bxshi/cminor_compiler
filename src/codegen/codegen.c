@@ -69,7 +69,7 @@ void decl_codegen(struct decl *d, FILE *file)
     } else {
       if (d->value) { // evalue rhs, put into stack
         expr_codegen(d->value, file);
-        //TODO: calculate offset of %rbp -- check if this is correct
+        //calculate offset of %rbp -- check if this is correct
 				fprintf(file, "MOVQ %s, %s\n", register_name(d->value->reg), symbol_code(d->symbol));
 
         register_free(d->value->reg);
@@ -91,7 +91,7 @@ void decl_codegen(struct decl *d, FILE *file)
       //allocate a register
 			int reg = register_alloc();
 			fprintf(file, "LEA %s, %s\n", d->name, register_name(reg));
-      //TODO: LEA d->name, %E ; MOV %E, -(%rbp)
+      // LEA d->name, %E ; MOV %E, -(%rbp)
 			fprintf(file, "MOV %s, %s", register_name(reg), symbol_code(d->symbol));
       //deallocate register
 			register_free(reg);
@@ -401,7 +401,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		break;
 
   case EXPR_CALL:
-		//TODO: call function
+		// call function
 		
 		// push all parameters into registers
 		
@@ -573,7 +573,7 @@ void expr_codegen(struct expr *e, FILE *file)
     expr_codegen(e->left, file);
     expr_codegen(e->right, file);
 
-    //TODO: move to register or move to stack
+    // move to register or move to stack
     fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), symbol_code(e->left->symbol), "# assign result to variable");
 
     register_free(e->right->reg);
@@ -594,7 +594,7 @@ void expr_codegen(struct expr *e, FILE *file)
 
   case EXPR_CURLY:
 		printf("codegen error: does not support array\n");
-    //TODO: check how expr_list are structurred
+    // check how expr_list are structurred
     break;
 
   case EXPR_SUBSCRIPT:
