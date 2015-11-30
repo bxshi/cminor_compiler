@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "codegen.h"
+#include "register.h"
 #include <string.h>
 
 int label_counter = 0;

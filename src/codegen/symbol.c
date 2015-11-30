@@ -8,6 +8,7 @@ struct symbol * symbol_create(symbol_t kind, struct type *type, char *name) {
 	sym->which = -1;
 	sym->type = type;
 	sym->name = name;
+	sym->defn = 1;
 
 	return sym;
 
@@ -19,6 +20,7 @@ struct symbol * symbol_create_param(int idx, struct type *type, char *name) {
 	sym->which = idx;
 	sym->type = type;
 	sym->name = name;
+	sym->defn = 1;
 
 	return sym;
 }

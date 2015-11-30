@@ -81,15 +81,49 @@ void decl_resolve(struct decl *d) {
 
 	struct symbol *sym = symbol_create(scope_level == 0 ? SYMBOL_GLOBAL : SYMBOL_LOCAL,
 																		 d->type, d->name);
-	if (scope_local_lookup(d->name) != 0) {
-		printf("resolve error: %s is already defined\n", d->name);
-		resolve_error++;
-	} else {
-		scope_bind(d->name, sym);
-	}
-	d->symbol = sym;
-	sym->which = hash_table_size(curr->h);
 
+	if (d->type->kind == TYPE_FUNCTION) {
+		// if this is definition
+		if (d->code) {
+			// if same name exists
+			if (scope_local_lookup(d->name) != 0) {
+				if (scope_local_lookup(d->name)->defn == 0) { // prev entry is declaration only
+					d->symbol = scope_local_lookup(d->name);
+					scope_local_lookup(d->name)->defn = 1;
+				} else {
+					printf("resolve error: xxx %s is already defined\n", d->name);
+					resolve_error++;
+					d->symbol = sym;
+					sym->which = hash_table_size(curr->h);
+				}
+			} else { // first 
+				scope_bind(d->name, sym);
+				d->symbol = sym;
+				sym->which = hash_table_size(curr->h);
+			}
+		} else { // declaration
+			sym->defn = 0;
+			if (scope_local_lookup(d->name) != 0) {
+				printf("resolve error: %s is already defined\n", d->name);
+				resolve_error++;
+			} else {
+				scope_bind(d->name, sym);
+			}
+			d->symbol = sym;
+			sym->which = hash_table_size(curr->h);
+		}
+	} else {
+	
+		if (scope_local_lookup(d->name) != 0) {
+			printf("resolve error: %s is already defined\n", d->name);
+			resolve_error++;
+		} else {
+			scope_bind(d->name, sym);
+		}
+		
+		d->symbol = sym;
+		sym->which = hash_table_size(curr->h);
+	}
 
 	expr_resolve(d->value);
 
@@ -153,7 +187,7 @@ void expr_resolve(struct expr *e) {
 	if (e->kind == EXPR_CALL) {
 		struct symbol *sym = scope_lookup(e->left->name);
 		if (!sym) {
-			printf("resolve error: %s is not defined\n", e->name);
+			printf("resolve error: %s is not defined\n", e->left->name);
 			resolve_error++;
 		} else {
 			if (resolve_print) {
@@ -680,7 +714,8 @@ void decl_typecheck(struct decl *d) {
 	if (!d->symbol) printf("decl has no symbol\n");
 	if (!d->symbol->type) printf("decl has no symbol type\n");
 
-	// how to determine this?
+	//TODO: do not treat function decl and defin as duplicate entries
+
 	if (d->symbol->kind == SYMBOL_GLOBAL && !expr_constant(d->value)) {
 		printf("type error: only constant values can be assigned to global value %s\n", d->symbol->name);
 		typecheck_error++;

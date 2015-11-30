@@ -15,6 +15,7 @@ struct symbol {
 	int which;
 	struct type *type;
 	char *name;
+	int defn; // used by function only, indicate if this is definition or declaration
 };
 
 struct symbol * symbol_create( symbol_t kind, struct type *type, char *name );
