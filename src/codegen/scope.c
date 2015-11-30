@@ -57,10 +57,7 @@ void scope_exit() {
 void scope_bind(const char *name, struct symbol *s) {
 	hash_table_insert(curr->h, name, s);
 	if (curr->type_handler) {
-		printf("bind %s, add local variable count to %d\n", name, curr->type_handler->local_variables + 1);
 		curr->type_handler->local_variables += 1;
-	} else {
-		printf("bind %s, with no local scope\n", name);
 	}
 }
 
@@ -225,7 +222,6 @@ void stmt_resolve(struct stmt *s) {
 
 void param_list_resolve(struct param_list *p, int idx) {
 	if (!p) return;
-	printf("param_list resolve %s\n", p->name);
 	if (p->type == 0) { // array
 		expr_resolve(p->expr);
 		p->symbol = symbol_create_param(idx, type_create(TYPE_INTEGER, 0, 0), 0);
@@ -239,7 +235,6 @@ void param_list_resolve(struct param_list *p, int idx) {
 			expr_resolve(p->expr);
 			p->symbol = sym;
 			scope_bind(p->name, sym);
-			printf("%s defined\n", p->name);
 		}
 	}
 	param_list_resolve(p->next, idx + 1);
@@ -403,7 +398,6 @@ struct type * expr_typecheck(struct expr *e) {
 
 		// ident and literals
 		case EXPR_IDENT:
-			printf("assign ident %s symbol type %p to expr\n", e->name, e->symbol->type);
 			e->type = e->symbol->type;
 			return e->type;
 		case EXPR_BOOLEAN:
@@ -616,10 +610,8 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 		case STMT_WHILE:
 			break;
 		case STMT_PRINT: // should all exprs after print has non void return?
-			printf("typecheck stmt_print\n");
 			curr_expr = s->expr;
 			while(curr_expr) {
-				printf("stmt print expr, kind %d \n", curr_expr->kind);
 				expr_typecheck(curr_expr);
 				curr_expr = curr_expr->next;
 			}
