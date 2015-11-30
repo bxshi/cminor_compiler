@@ -592,6 +592,7 @@ void stmt_typecheck(struct stmt *s, struct type *rtn_type, const char *func_name
 			break;
 		case STMT_IF_ELSE:
 			t = expr_typecheck(s->expr);
+			if (t->kind == TYPE_FUNCTION) t = t->subtype;
 			if (t->kind != TYPE_BOOLEAN) {
 				printf("type error: if condition is ");
 				type_print(t);
