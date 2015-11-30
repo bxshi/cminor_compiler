@@ -485,7 +485,29 @@ void expr_codegen(struct expr *e, FILE *file)
     break;
 
   case EXPR_EXP:
-    // TODO: call integer_power
+		// generate two operators
+		expr_codegen(e->left, file);
+		expr_codegen(e->right, file);
+
+		fprintf(file, "MOVQ %s, %s\n", register_name(e->left->reg), arg_regs[0]);
+		fprintf(file, "MOVQ %s, %s\n", register_name(e->right->reg), arg_regs[1]);
+
+		register_free(e->left->reg);
+		e->left->reg = -1;
+		register_free(e->right->reg);
+		e->right->reg = -1;
+
+		fprintf(file, "PUSHQ %%r10\n");
+		fprintf(file, "PUSHQ %%r11\n");
+
+		fprintf(file, "CALL integer_power\n");
+
+		fprintf(file, "POPQ %%r11\n");
+		fprintf(file, "POPQ %%r10\n");
+
+		e->reg = register_alloc();
+		fprintf(file, "MOVQ %%rax, %s\n", register_name(e->reg));
+
     break;
   case EXPR_MOD:
 		// TODO: check mod operation
