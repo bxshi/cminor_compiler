@@ -301,6 +301,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		expr_codegen(e->left, file);
 		expr_codegen(e->right, file);
 
+		if (e->left) {
 		fprintf(file, "ADDQ %s, %s\n", register_name(e->left->reg), register_name(e->right->reg));
 
 		register_free(e->left->reg);
@@ -311,6 +312,14 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		register_free(e->right->reg);
 		e->right->reg = -1;
+		} else {
+			e->reg = register_alloc();
+
+			fprintf(file, "MOVQ %s, %s", register_name(e->right->reg), register_name(e->reg));
+
+			register_free(e->right->reg);
+			e->right->reg = -1;
+		}
 
 		break;
   case EXPR_SUB: // tested
