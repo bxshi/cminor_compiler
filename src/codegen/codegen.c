@@ -35,21 +35,21 @@ void caller_prepostamble(char *func_name, FILE *file) {
 }
 
 char * resolve_print_expr_type(struct type* t) {
-				switch(t->kind) {
-					case TYPE_BOOLEAN:
-						return "print_boolean";
-					case TYPE_CHAR:
-						return "print_character";
-					case TYPE_STRING:
-						return "print_string";
-					case TYPE_INTEGER:
-						return "print_integer";
-					case TYPE_FUNCTION:
-						return resolve_print_expr_type(t->subtype);
-					default:
-						return "";
-				}
-			}
+	switch(t->kind) {
+		case TYPE_BOOLEAN:
+			return "print_boolean";
+		case TYPE_CHAR:
+			return "print_character";
+		case TYPE_STRING:
+			return "print_string";
+		case TYPE_INTEGER:
+			return "print_integer";
+		case TYPE_FUNCTION:
+			return resolve_print_expr_type(t->subtype);
+		default:
+			return "";
+	}
+}
 
 void decl_codegen(struct decl *d, FILE *file)
 {
@@ -440,7 +440,7 @@ void expr_codegen(struct expr *e, FILE *file)
 		while(expr_list && argcount < 6) {
 			expr_codegen(expr_list, file);
 			if (expr_list->kind == EXPR_STRING) {
-				fprintf(file, "MOVQ %s, %s %s %d\n", expr_list->name, arg_regs[argcount++], "#push arg", argcount);
+				fprintf(file, "MOVQ $%s, %s %s %d\n", expr_list->name, arg_regs[argcount++], "#push arg", argcount);
 			} else {
 				fprintf(file, "MOVQ %s, %s %s %d\n", register_name(expr_list->reg), arg_regs[argcount++], "#push arg", argcount);
 			}
@@ -461,12 +461,11 @@ void expr_codegen(struct expr *e, FILE *file)
 
 		break;
 
-	//TODO: store result in e->reg
   case EXPR_INCR:
     expr_codegen(e->right, file);
 
-    //e->reg = register_alloc();
-		//fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
+    e->reg = register_alloc();
+		fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before ++");
 
     fprintf(file, "INCQ %s %s\n", register_name(e->right->reg), "# increment");
 
@@ -479,12 +478,11 @@ void expr_codegen(struct expr *e, FILE *file)
 
     break;
 
-	//TODO: store result in e->reg
   case EXPR_DECR:
     expr_codegen(e->right, file);
 
-    //e->reg = register_alloc();
-		//fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before --");
+    e->reg = register_alloc();
+		fprintf(file, "MOVQ %s, %s %s\n", register_name(e->right->reg), register_name(e->reg), "# move value to expr before --");
 
     fprintf(file, "DECQ %s %s\n", register_name(e->right->reg), "# increment");
 
