@@ -13,5 +13,5 @@ main : function integer() = {
 	i = 1;
 
 
-	return fib(i, -2, 3);
+	return fib(i, -2, 3) - 7;
 }

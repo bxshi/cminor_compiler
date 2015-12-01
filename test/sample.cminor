@@ -3,5 +3,5 @@ y : integer = 10;
 
 main : function integer() = {
 	x = y;
-	return x;
+	return x - 10;
 }

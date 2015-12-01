@@ -4,5 +4,5 @@ z : integer = 0; // deal with negative value
 
 main : function integer() = {
 	if (x > y) return 1;
-	return 0;
+	return z;
 }

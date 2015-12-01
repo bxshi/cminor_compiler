@@ -8,5 +8,5 @@ main : function integer () = {
 	x = x % 1000;
 	y--;
 
-	return 90 - 100;
+	return x + y - 9; // 1 + 8 = 9
 }

@@ -2,6 +2,6 @@ y : integer = 5;
 
 main : function integer () = {
 
-	return y;
+	return y * 5 - 25;
 
 }

@@ -3,5 +3,5 @@ main : function integer() = {
 	for(i = 0; i < 10; i++)
 		i = i;
 
-	return i;
+	return i - 10;
 }

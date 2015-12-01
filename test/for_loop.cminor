@@ -8,5 +8,5 @@ main : function integer () = {
 		print i, "\n";
 	}
 
-	return i;
+	return i - 10;
 }
