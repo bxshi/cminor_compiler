@@ -16,6 +16,8 @@ int typecheck_error = 0;
 
 int returned = 0;
 
+int if_for_var_count = 0; // 1 if outter scope is if or for
+
 int resolve_result() {
 	return resolve_error;
 }
@@ -55,10 +57,28 @@ void scope_exit() {
 }
 
 void scope_bind(const char *name, struct symbol *s) {
+	int outter_scope_count = 0;
+	struct scope* ptr = curr;
 	hash_table_insert(curr->h, name, s);
-	if (curr->type_handler) {
-		curr->type_handler->local_variables += 1;
+	while(outter_scope_count <= if_for_var_count && ptr) {
+		if (ptr->type_handler) {
+			ptr->type_handler->local_variables += 1;
+		}
+		ptr = ptr->prev;
+		++outter_scope_count;
 	}
+}
+
+int get_which() {
+	int which = 0;
+	int outter_scope_count = 0;
+	struct scope* ptr = curr;
+	while(outter_scope_count <= if_for_var_count && ptr) {
+		which += hash_table_size(ptr->h);
+		++outter_scope_count;
+		ptr=ptr->prev;
+	}
+	return which;
 }
 
 struct symbol *scope_lookup(const char *name) {
@@ -94,12 +114,12 @@ void decl_resolve(struct decl *d) {
 					printf("resolve error: xxx %s is already defined\n", d->name);
 					resolve_error++;
 					d->symbol = sym;
-					sym->which = hash_table_size(curr->h);
+					sym->which = get_which();
 				}
 			} else { // first 
 				scope_bind(d->name, sym);
 				d->symbol = sym;
-				sym->which = hash_table_size(curr->h);
+				sym->which = get_which();
 			}
 		} else { // declaration
 			sym->defn = 0;
@@ -110,7 +130,7 @@ void decl_resolve(struct decl *d) {
 				scope_bind(d->name, sym);
 			}
 			d->symbol = sym;
-			sym->which = hash_table_size(curr->h);
+			sym->which = get_which();
 		}
 	} else {
 	
@@ -122,7 +142,7 @@ void decl_resolve(struct decl *d) {
 		}
 		
 		d->symbol = sym;
-		sym->which = hash_table_size(curr->h);
+		sym->which = get_which();
 	}
 
 	expr_resolve(d->value);
@@ -141,6 +161,9 @@ void decl_resolve(struct decl *d) {
 	
 
 	if (d->code) {
+		// if this is a function, reset outter_scope counter to 0
+		int old_if_for_var_count = if_for_var_count;
+		if_for_var_count = 0;
 		scope_enter();
 		curr->type_handler = d->type;
 		param_list_resolve(d->type->params, 0);
@@ -155,10 +178,15 @@ void decl_resolve(struct decl *d) {
 		}
 		returned = old_rtn;
 		scope_exit();
+		if_for_var_count = old_if_for_var_count;
 	} else { // array
+		// if this is a function, reset outter_scope counter to 0
+		int old_if_for_var_count = if_for_var_count;
+		if_for_var_count = 0;
 		scope_enter();
 		param_list_resolve(d->type->params, 0);
 		scope_exit();
+		if_for_var_count = old_if_for_var_count;
 	}
 
 	decl_resolve(d->next); // ?
@@ -225,14 +253,18 @@ void stmt_resolve(struct stmt *s) {
 			break;
 		case STMT_IF_ELSE:
 			expr_resolve(s->expr);
+			++if_for_var_count;
 			stmt_resolve(s->body);
 			stmt_resolve(s->else_body);
+			--if_for_var_count;
 			break;
 		case STMT_FOR:
 			expr_resolve(s->init_expr);
 			expr_resolve(s->expr);
 			expr_resolve(s->next_expr);
+			++if_for_var_count; 
 			stmt_resolve(s->body);
+			--if_for_var_count;
 			break;
 		case STMT_WHILE:
 			break;

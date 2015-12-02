@@ -103,7 +103,12 @@ void decl_codegen(struct decl *d, FILE *file)
     break;
 
   case TYPE_FUNCTION:
-		if (!d->code) break; // if declaration just skip it
+		if (!d->code && d->symbol->kind == SYMBOL_GLOBAL) {
+			fprintf(file, ".text\n");
+			fprintf(file, ".global %s\n", d->name);
+			break; // if declaration just skip it
+		}
+
     fprintf(file, ".text\n");
 		if (d->symbol->kind == SYMBOL_GLOBAL) fprintf(file, ".global %s\n", d->name);
 		fprintf(file, "%s:\n", d->name);
